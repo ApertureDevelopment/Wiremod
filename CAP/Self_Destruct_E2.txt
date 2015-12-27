@@ -1,0 +1,89 @@
+@name Self Destruct E2
+@inputs Countdown_timer Charge Charging
+@outputs Detonate Abort Detonation_Code:string Abort_Code:string Time_to_destruct
+@persist Entity:entity D A Time Argument2B:normal
+@trigger 
+
+interval(1000)
+
+if (first()|dupefinished()){
+    print("WELCOME TO THE SELF DESTRUCTION SYSTEM!")
+    print("Please enter your Destruct and your Abort code!")
+    print("Type '!set destruct' to set the Destruction Code")
+    print("Type '!set abort' to set the Abort code")
+    print("Type '!set time' to set the Destruct time")
+    print("Type '!sdhelp' to get a list of the Commands")
+    Entity=entity()
+}
+########CHAT COMMANDS START###########
+runOnChat(1)
+if (chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Argument1 = LastSaid[2,string]
+    Argument2 = LastSaid[3,string]
+    
+    
+    if(Command=="!set"){
+        if(Argument1=="destruct"){
+            hideChat(1)
+            Detonation_Code=Argument2
+            print("Detonation Code set to: "+ Argument2)
+        }
+        elseif(Argument1=="abort"){
+            hideChat(1)
+            Abort_Code=Argument2
+            print("Abort Code set to: "+ Argument2)
+        }
+        elseif(Argument1=="time"){
+            hideChat(1)
+            Argument2B=Argument2:toNumber()
+            Time_to_destruct=Argument2B
+            print("Destruct time set to: "+ Time_to_destruct)
+        }
+        else{
+            print("Unknown Argument!")
+        }
+        hideChat(1)
+    }
+    elseif(Command=="!destruct"){
+        print("ATTENTION SELF DESTRUCT SQUENCE INITIATED!")
+        Entity:soundPlay(100,100,"alarm/area51_alert.wav")
+        Time=1
+        Detonate=1
+        timer("SD",1000)
+    }
+    elseif(Command=="!abort"){
+        print("ATTENTION SELF DESTRUCT SQUENCE ABORTED!")
+        soundStop(100)
+        Time=0
+        Abort=1
+        timer("SDA",1000)
+    }
+    elseif(Command=="!sdhelp"){
+        print("Type '!set destruct' to set the Destruction Code")
+        print("Type '!set abort' to set the Abort code")
+        print("Type '!set time' to set the Destruct time")
+        print("Type '!sdhelp' to get a list of the Commands")
+        print("Type '!destruct' to initiate the Self-Destruction")
+        print("Type '!abort' to Abort the Self-Destruction")
+    }
+}
+##########CHAT COMMANDS STOP#############
+
+##########SYSTEM############
+if(Time>0)
+{
+    print(Countdown_timer+"Seconds Left")
+}
+
+if(clk("SD"))
+{
+    Detonate=0
+}
+if(clk("SDA"))
+{
+    Abort=0
+}
+
+##########System End#########
