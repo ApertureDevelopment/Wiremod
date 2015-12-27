@@ -1,0 +1,54 @@
+@name Door System
+@inputs Valid Invalid Opened
+@outputs Open Lock Toggle Alert FL:vector D DL:vector
+@persist 
+@trigger 
+
+interval(50)
+if(Valid==1){
+    Open = 1
+    Toggle = 1
+    timer("wait",10000)    
+}
+
+elseif(changed(Invalid)& Invalid ==1){
+    Lock = 1
+    Alert = 1
+    timer("meh2",1)
+    timer("Alarm",60000)
+}
+
+
+if(clk("wait")){
+    Open = 0 
+    Toggle = 0
+    timer("W2",100)   
+}
+elseif(clk("Alarm")){
+    Alert = 0
+    Lock = 0   
+}
+elseif(clk("W2")){
+    Toggle = 1
+    timer("W3",10)
+}
+elseif(clk("W3")){
+    Toggle = 0
+}
+if(changed(Opened) & Opened ==1){
+    D=1
+    DL=vec(0,65,0)
+    timer("meh2",1)
+}
+elseif(Opened==0){
+    D=0
+    DL=vec(65,0,0)
+}
+if(clk("meh2")&(Alert==1|D==1)){
+    FL=vec(255,0,0)
+    timer("Meh1",1000)
+}
+elseif(clk("Meh1")){
+    FL=vec(0,0,0)
+    timer("meh2",1000)
+}

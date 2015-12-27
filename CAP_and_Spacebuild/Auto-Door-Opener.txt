@@ -1,0 +1,125 @@
+@name Auto-Door-Opener-SB
+@inputs Opened
+@outputs Open Toggle Lockdown DL:vector
+@persist Owner:vector Entity:vector Distance T1 T2 LD ChipOwner:entity C:string
+
+interval(10)
+if (first()|dupefinished()){
+Entity=entity():pos()
+ChipOwner=owner()
+LD=0
+Command=""
+Arg1=""
+Arg2=""
+}
+
+Owner=ChipOwner:pos()
+Distance= Owner:distance(Entity)
+runOnChat(1)
+if (chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Arg1 = LastSaid[2,string]
+    Arg2 = LastSaid[3,string]
+    
+    if(Command=="!lock"){
+        if(Arg1=="1"){
+            LD=1
+            print("Lockdown Enabled!")
+            hideChat(1)
+        }
+        elseif(Arg1=="0"){
+            LD=0
+            print("Lockdown Disabled!")
+            hideChat(1)
+        }
+        else{
+            print("UNKNOWN Argument!")
+        }
+    }
+    elseif(Command=="!open"){
+        if(Arg1=="1")
+        {
+            print("DOOR OPENED!")
+            LD=2
+            Open=1
+            T1=0
+            T2=1
+            hideChat(1) 
+        }
+        elseif(Arg1=="0"){
+            print("DOOR CLOSED!")
+            LD=2
+            Open=0
+            T1=1
+            T2=0
+            hideChat(1) 
+        }
+        elseif(Arg1=="auto"){
+            LD=0
+            hideChat(1)
+            print("DOOR AUTOMATION ONLINE!")
+        }
+    }
+    elseif(Command=="!owner"){
+        ChipOwner=findPlayerByName(Arg1)
+        print("Owner Changed!")
+        hideChat(1)
+    }
+    Command=""
+}
+
+if(LD==0){
+   if(Distance<200)
+   {
+      Open=1
+      T1=0
+      T2=1   
+   }
+   elseif(Distance>200)
+   {
+       Open=0
+       T1=1
+       T2=0
+   }
+}
+elseif(LD==1){
+    Lockdown=1
+    Lock=1
+}
+
+ if(T1==1)
+ {
+     timer("LD",1000)
+ }
+ elseif(T1==0)
+ {
+     Lockdown=0
+ }
+ if(T2==1&Opened==0)
+ {
+     timer("SGD",500)
+ }
+
+ if(clk("SGD"))
+ {
+     Toggle=1
+     timer("SGD2",500)
+ }
+ if(clk("SGD2"))
+ {
+     Toggle=0
+ }
+ if(clk("LD"))
+ {
+    Lockdown=1
+ }
+if(Opened==1){
+    DL=vec(0,255,0)
+}
+elseif(Opened==0){
+    DL=vec(255,0,0)
+}
+
+
+
