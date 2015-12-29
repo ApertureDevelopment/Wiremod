@@ -1,6 +1,6 @@
 @name Auto-Door-Opener-SB
-@inputs Opened
-@outputs Open Toggle Lockdown DL:vector
+@inputs Door:wirelink
+@outputs DL:vector
 @persist Owner:vector Entity:vector Distance T1 T2 LD ChipOwner:entity C:string
 
 interval(10)
@@ -8,6 +8,7 @@ if (first()|dupefinished()){
 Entity=entity():pos()
 ChipOwner=owner()
 print("Write '!dohelp' to get a Command list of this Chip")
+print("E2 Made by [XCO][CDG] Rainbow Dash")
 LD=0
 Command=""
 Arg1=""
@@ -43,7 +44,7 @@ if (chatClk(owner())){
         {
             print("DOOR OPENED!")
             LD=2
-            Open=1
+            Door["Open_1",normal]=1
             T1=0
             T2=1
             hideChat(1) 
@@ -51,7 +52,7 @@ if (chatClk(owner())){
         elseif(Arg1=="0"){
             print("DOOR CLOSED!")
             LD=2
-            Open=0
+            Door["Open_1",normal]=0
             T1=1
             T2=0
             hideChat(1) 
@@ -78,20 +79,20 @@ if (chatClk(owner())){
 if(LD==0){
    if(Distance<200)
    {
-      Open=1
+      Door["Open_1",normal]=1
       T1=0
       T2=1   
    }
    elseif(Distance>200)
    {
-       Open=0
+       Door["Open_1",normal]=0
        T1=1
        T2=0
    }
 }
 elseif(LD==1){
-    Lockdown=1
-    Lock=1
+    Door["Lockdown",normal]=1
+    Door["Lock_1",normal]=1
 }
 
  if(T1==1)
@@ -100,30 +101,30 @@ elseif(LD==1){
  }
  elseif(T1==0)
  {
-     Lockdown=0
+     Door["Lockdown",normal]=0
  }
- if(T2==1&Opened==0)
+ if(T2==1&Door["Opened",normal]==0)
  {
      timer("SGD",500)
  }
 
  if(clk("SGD"))
  {
-     Toggle=1
+     Door["Toggle",normal]=1
      timer("SGD2",500)
  }
  if(clk("SGD2"))
  {
-     Toggle=0
+     Door["Toggle",normal]=0
  }
  if(clk("LD"))
  {
-    Lockdown=1
+    Door["Lockdown",normal]=1
  }
-if(Opened==1){
+if(Door["Opened",normal]==1){
     DL=vec(0,255,0)
 }
-elseif(Opened==0){
+elseif(Door["Opened",normal]==0){
     DL=vec(255,0,0)
 }
 

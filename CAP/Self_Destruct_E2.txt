@@ -1,7 +1,7 @@
 @name Self Destruct E2
-@inputs Countdown_timer Charge Charging
-@outputs Detonate Abort Detonation_Code:string Abort_Code:string Time_to_destruct
-@persist Entity:entity D A Time Argument2B:normal
+@inputs NaqBomb:wirelink
+@outputs 
+@persist Entity:entity D A Time Argument2B:normal T
 @trigger 
 
 interval(1000)
@@ -27,19 +27,20 @@ if (chatClk(owner())){
     if(Command=="!set"){
         if(Argument1=="destruct"){
             hideChat(1)
-            Detonation_Code=Argument2
+            NaqBomb["Detonation Code",string]=Argument2
             print("Detonation Code set to: "+ Argument2)
         }
         elseif(Argument1=="abort"){
             hideChat(1)
-            Abort_Code=Argument2
+            NaqBomb["Abort Code",string]=Argument2
             print("Abort Code set to: "+ Argument2)
         }
         elseif(Argument1=="time"){
             hideChat(1)
             Argument2B=Argument2:toNumber()
-            Time_to_destruct=Argument2B
-            print("Destruct time set to: "+ Time_to_destruct)
+            NaqBomb["Time to Destruct",normal]=Argument2B
+            T=Argument2B
+            print("Destruct time set to: "+ T)
         }
         else{
             print("Unknown Argument!")
@@ -50,14 +51,14 @@ if (chatClk(owner())){
         botSay("[SELF-DESTRUCT]",vec(255,255,0),"SELF-DESTRUCT SEQUENCE HAS BEEN INITIATED!")
         Entity:soundPlay(100,100,"alarm/area51_alert.wav")
         Time=1
-        Detonate=1
+        NaqBomb["Detonate",normal]=1
         timer("SD",1000)
     }
     elseif(Command=="!abort"){
         botSay("[SELF-DESTRUCT]",vec(255,255,0),"SELF-DESTRUCT SEQUENCE ABORTED!")
         soundStop(100)
         Time=0
-        Abort=1
+        NaqBomb["Abort",normal]=1
         timer("SDA",1000)
     }
     elseif(Command=="!sdhelp"){
@@ -74,16 +75,16 @@ if (chatClk(owner())){
 ##########SYSTEM############
 if(Time>0)
 {
-    botSay("[SELF-DESTRUCT]",vec(255,255,0),Countdown_timer+" Seconds Left")
+    botSay("[SELF-DESTRUCT]",vec(255,255,0),NaqBomb["Countdown Timer",normal]+" Seconds Left")
 }
 
 if(clk("SD"))
 {
-    Detonate=0
+    NaqBomb["Detonate",normal]=0
 }
 if(clk("SDA"))
 {
-    Abort=0
+    NaqBomb["Abort",normal]=0
 }
 
 ##########System End#########

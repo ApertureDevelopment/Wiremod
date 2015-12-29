@@ -1,53 +1,58 @@
 @name Door System
-@inputs Valid Invalid Opened
-@outputs Open Lock Toggle Alert FL:vector DL:vector
-@persist D
+@inputs Valid Invalid Door:wirelink
+@outputs FL:vector DL:vector
+@persist D E:entity Open_1 Lock_1 Toggle Lockdown Opened L
 @trigger 
 
 interval(50)
 if (first()|dupefinished()){
     print("E2 made by [XCO][CDG] Rainbow Dash")
+    E=entity()
 }
 if(Valid==1){
-    Open = 1
-    Toggle = 1
+    Door["Open_1",normal] = 1
+    Door["Toggle",normal] = 1
     timer("wait",10000)    
 }
 
 elseif(changed(Invalid)& Invalid ==1){
-    Lock = 1
-    Alert = 1
+    Door["Lock_1",normal] = 1
+    Door["Lockdown",normal] = 1
+    L=1
+    E:soundPlay(60000,60000,"alarm/area51_alert.wav")
     timer("meh2",1)
     timer("Alarm",60000)
 }
 
 
 if(clk("wait")){
-    Open = 0 
-    Toggle = 0
+    Door["Open_1",normal] = 0 
+    Door["Toggle",normal] = 0
     timer("W2",100)   
 }
 elseif(clk("Alarm")){
-    Alert = 0
-    Lock = 0   
+    Door["Lockdown",normal] = 0
+    soundStop(60000)
+    L=0
+    Door["Lock_1",normal] = 0   
 }
 elseif(clk("W2")){
-    Toggle = 1
+    Door["Toggle",normal] = 1
     timer("W3",10)
 }
 elseif(clk("W3")){
-    Toggle = 0
+    Door["Toggle",normal] = 0
 }
-if(changed(Opened) & Opened ==1){
+if(changed(Door["Opened",normal]) & Door["Opened",normal] ==1){
     D=1
     DL=vec(0,65,0)
     timer("meh2",1)
 }
-elseif(Opened==0){
+elseif(Door["Opened",normal] ==0){
     D=0
     DL=vec(65,0,0)
 }
-if(clk("meh2")&(Alert==1|D==1)){
+if(clk("meh2")&(L==1|D==1)){
     FL=vec(255,0,0)
     timer("Meh1",1000)
 }
