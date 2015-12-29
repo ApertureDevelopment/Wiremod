@@ -1,10 +1,13 @@
 @name Door System
 @inputs Valid Invalid Opened
-@outputs Open Lock Toggle Alert FL:vector D DL:vector
-@persist 
+@outputs Open Lock Toggle Alert FL:vector DL:vector
+@persist D
 @trigger 
 
 interval(50)
+if (first()|dupefinished()){
+    print("E2 made by [XCO][CDG] Rainbow Dash")
+}
 if(Valid==1){
     Open = 1
     Toggle = 1

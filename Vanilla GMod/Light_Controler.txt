@@ -1,0 +1,50 @@
+@name Light Controler
+@inputs 
+@outputs RGB:vector
+@persist RED GREEN BLUE
+
+interval(100)
+
+if(first()|dupefinished()){
+    print("Type '!lhelp' to get the Command informations!")
+    print("E2 made by [XCO][CDG] Rainbow Dash")
+    RED=0
+    GREEN=0
+    BLUE=0
+    RGB=vec(0,0,0)
+}
+runOnChat(1)
+if (chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Arg1 = LastSaid[2,string]
+    Arg2 = LastSaid[3,string]
+    Arg3 = LastSaid[4,string]
+    
+    if(Command=="!lhelp"){
+        print("Use '!light 1/0' to turn the light On/Off")
+        print("Use '!lcolor {RED} {GREEN} {BLUE}' to change thje light Color")
+    }
+    elseif(Command=="!light"){
+        if(Arg1=="1"){
+            RGB=vec(RED,GREEN,BLUE)
+            print("Light was Turned ON")
+        }
+        elseif(Arg1=="0"){
+            RGB=vec(0,0,0)
+            print("Light was Turned OFF")
+        }
+        else{
+            print("Unknown Argument!")
+        }
+    }
+    elseif(Command=="!lcolor"){
+        RED=Arg1:toNumber()
+        GREEN=Arg2:toNumber()
+        BLUE=Arg3:toNumber()
+        print("Ligh color was changed to:"+RED+" RED "+GREEN+" GREEN "+BLUE+" BLUE!")
+        RGB=vec(RED,GREEN,BLUE)
+    }
+}
+
+
