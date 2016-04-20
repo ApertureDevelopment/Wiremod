@@ -1,7 +1,25 @@
-# Wiremod
-My self Programmed E2's for Wiremod inside Gmod
+#Welcome to Captain1242's Git Hub Wiremod Repositorie#
 
+Feel free to Download these E2's
+Just Please dont abuse them!
 
-#CURRENTLY NOT WORKING#
-USE THIS LINK TO DOWNLOAD THE E2 CODES:
-https://onedrive.live.com/redir?resid=AD34701625116204!8871&authkey=!APG0_tVHZ-0eKH4&ithint=folder%2c
+#Modification#
+
+You can modify the Codes I share just to make it Public please do a Pull request
+
+#About me#
+
+You can meet me anytime on the Following Servers:
+
+#X-Coder Buildserver:#
+Website: http://gmod.x-coder.de
+IP: 87.118.105.26:27016
+
+#Cloudsdale Gaming:#
+Website: www.cloudsdalegaming.com
+MC IP: mc.cloudsdalegaming.com:25565
+GMod IP: teamunreal.no-ip.org:27015
+Terraria: teamunreal.no-ip.org:4540
+Minecraft PE: teamunreal.no-ip.org:19132
+Star Wars JKA: teamunreal.no-ip.org:29070
+
