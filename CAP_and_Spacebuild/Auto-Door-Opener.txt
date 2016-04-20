@@ -3,7 +3,7 @@
 @outputs DL:vector
 @persist Owner:vector Entity:vector Distance T1 T2 LD ChipOwner:entity C:string
 
-interval(10)
+interval(500)
 if (first()|dupefinished()){
 Entity=entity():pos()
 ChipOwner=owner()
@@ -13,13 +13,14 @@ LD=0
 Command=""
 Arg1=""
 Arg2=""
+Door["Disable Buttons Mode",normal]=1
 }
 
 Owner=ChipOwner:pos()
 Distance= Owner:distance(Entity)
 runOnChat(1)
-if (chatClk(owner())){
-    LastSaid=owner():lastSaid():explode(" ")
+if (chatClk(ChipOwner)){
+    LastSaid=ChipOwner:lastSaid():explode(" ")
     Command = LastSaid[1,string]
     Arg1 = LastSaid[2,string]
     Arg2 = LastSaid[3,string]
@@ -60,7 +61,11 @@ if (chatClk(owner())){
         elseif(Arg1=="auto"){
             LD=0
             hideChat(1)
+            print("DOOR=Automation")
             print("DOOR AUTOMATION ONLINE!")
+        }
+        else{
+            print("ERROR")
         }
     }
     elseif(Command=="!owner"){
@@ -93,6 +98,7 @@ if(LD==0){
 elseif(LD==1){
     Door["Lockdown",normal]=1
     Door["Lock_1",normal]=1
+    T1=2
 }
 
  if(T1==1)

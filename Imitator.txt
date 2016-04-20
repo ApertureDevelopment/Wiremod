@@ -1,0 +1,85 @@
+@name Imitator
+@inputs 
+@outputs DB Argument1:string Argument2:string Argument3:string Argument4:string Argument5:string Argument6:string Argument7:string Argument8:string Argument9:string
+@persist Target:string RGB:vector R G B
+@trigger 
+interval(100)
+runOnChat(1)
+
+if(first()|dupefinished()){
+    print("Commands are:")
+    print("!im <Text> to imitate")
+    print("!imap <Map name> to imitate a Mapvote")
+    print("!bann <Baning Player> to imitate a ban")
+    print("!imp <Player>/Console to set the Imitating Player")
+    print("!icol <R> <G> <B> to set the Imitating rank Color")
+    print("!ihelp to get a Command list")
+    print("This E2 wors just for Imitating ULX")
+    print("E2 made by [XCO][CDG] Rainbow Dash")
+}
+###VARIABLE###
+
+
+
+
+####SYSTEM###
+if (chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Argument1 = LastSaid[2,string]
+    Argument2 = LastSaid[3,string]
+    Argument3 = LastSaid[4,string]
+    Argument4 = LastSaid[5,string]
+    Argument5 = LastSaid[6,string]
+    Argument6 = LastSaid[7,string]
+    Argument7 = LastSaid[8,string]
+    Argument8 = LastSaid[9,string]
+    Argument9 = LastSaid[10,string]
+    
+    if(Command=="!imc"){
+    chatPrint(RGB,Target,vec(255,255,255),": "+Argument1+" "+Argument2+" "+Argument3+" "+Argument4+" "+Argument5+" "+Argument6+" "+Argument7+" "+Argument8+" "+Argument9)
+    hideChat(1)
+    DB=1
+}
+if(Command=="!imap"){
+    chatPrint(vec(0,127,127),"("+Target+")",vec(153,227,255)," has changed the map to: ",vec(33,255,0),Argument1)
+    hideChat(1)
+    DB=1
+}
+if(Command=="!bann"){
+    TG=findPlayerByName(Argument1):name()
+    chatPrint(vec(0,127,127),"("+Target+")",vec(153,227,255)," has banned: ",vec(33,255,0),TG,vec(153,227,255)," For: ",vec(33,255,0),Argument2,vec(153,227,255)," Minutes")
+    hideChat(1)
+    DB=1
+}
+if(Command=="!imp"){
+    if(Argument1=="Console"){
+        Target="Console"
+        R=255
+        G=255
+        B=255
+    }
+    else{
+        Target=findPlayerByName(Argument1):name()
+    }
+    hideChat(1)
+}
+if(Command=="!icol"){
+    R=Argument1:toNumber()
+    G=Argument2:toNumber()
+    B=Argument3:toNumber()
+    RGB=vec(R,G,B)
+    hideChat(1)
+}
+if(Command=="!ihelp"){
+    print("Commands are:")
+    print("!im <Text> to imitate")
+    print("!imap <Map name> to imitate a Mapvote")
+    print("!bann <Baning Player> to imitate a ban")
+    print("!imp <Player>/Console to set the Imitating Player")
+    print("!icol <R> <G> <B> to set the Imitating rank Color")
+    print("!ihelp to get a Command list")
+    print("This E2 wors just for Imitating ULX")
+    hideChat(1)
+}
+}

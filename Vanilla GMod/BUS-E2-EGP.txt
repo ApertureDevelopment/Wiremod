@@ -1,0 +1,258 @@
+@name BUS-E2-EGP
+@inputs LD RD EGP:wirelink EGP2:wirelink
+@outputs Text:string ST:string LL:vector RL:vector SavedPos:table LINE:string Direction:string
+@persist SavedPos:table File:string CurrentStation:string
+@persist Filecanload FileReady Loaded Notloaded Loadit E:entity N
+@persist TIME:string TXTPOS:vector2 TXTCOLOR:vector SIGNCOLOR:vector N2:string N3:string
+@persist HH:string MM:string SS:string H M S1
+@trigger 
+interval(100)
+
+N=fileCanWrite()
+
+
+#Main System
+S = entity()
+runOnChat(1)
+runOnFile(1)
+
+function void savePos(Name:string, Pos:vector){
+    SavedPos[Name, vector] = Pos
+    if (fileCanWrite()){
+        fileWrite(File,vonEncode(SavedPos))
+        hint("Saved",5)
+    }
+    else{
+        hint("Write wasnt Possible",5)
+    }
+}
+
+function string getCurrentStation(){
+    Keys = SavedPos:keys()
+    EntityPos = entity():pos()
+    for (Key=1, Keys:count()){
+       Pos = SavedPos[Keys[Key,string],vector]
+       Distance = EntityPos:distance(Pos)
+       if(Distance < 1000){
+         return Keys[Key,string]
+       }
+    }
+    return ""
+}
+if (first()|dupefinished()) {
+    runOnChat(1)
+    runOnFile(1)
+    
+    File = "bus/Bus_"+map()+".txt"
+    print("E2 Made by [XCO][CDG] Rainbow Dash")
+    E=entity()
+    fileLoad(File)
+}
+
+###FILE LOAD START###############################
+if (fileLoaded()){
+    Loaded = 1
+    Notloaded = 0
+    stoptimer("notloaded")
+}else{
+    timer("notloaded",1000)
+}
+
+if (clk("notloaded")){
+    Notloaded = 1
+}
+
+if (changed(FileReady) & FileReady){
+        timer("waitfile",1000)
+}
+
+if (clk("waitfile")){
+    Loadit = 1
+}  
+
+if(!FileReady){
+    Filecanload = fileCanLoad()
+    Loaded = fileLoaded()
+    if(Loaded){  
+        print("Test2")
+        hint(map()+".txt loaded!",7)        
+        FileReady = 1            
+    }
+}   
+###FILE LOAD END###############################   
+    
+if( changed(FileReady) & FileReady ){
+    File = fileRead()        
+    SavedPos = vonDecodeTable(File)
+    hint("Stations loaded from file", 100)
+} 
+
+if (chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Arg1 = LastSaid[2,string]
+    Arg2 = LastSaid[3,string]
+if(Command=="!SZ"){
+    hideChat(1)
+    Text = "SCHOOL DRIVE"
+    Direction=Text
+    LINE="983"
+    TXTPOS=vec2(30,20)
+    TXTCOLOR=vec(255,0,0)
+    chatPrint(vec(255,110,0),"[B"+LINE+"]",vec(255,255,0),"New Mode: SCHOOL DRIVE")
+}
+elseif(Command=="!DF"){
+    hideChat(1)
+    Text = "SERVICE"
+    Direction=Text
+    LINE="999"
+    TXTPOS=vec2(120,20)
+    TXTCOLOR=vec(255,100,0)
+    chatPrint(vec(255,110,0),"[B"+LINE+"]",vec(255,255,0),"New Mode: SERVICE! DO NOT ENTER!!!" )
+}
+elseif(Command=="!LF"& Arg1){
+    hideChat(1)
+    Text = "LINE "+Arg1
+    LINE=Arg1
+    Direction=Arg2
+    TXTPOS=vec2(120,20)
+    TXTCOLOR=vec(255,100,0)
+    chatPrint(vec(255,110,0),"[B"+LINE+"]",vec(255,255,0),"New Mode: Regular.",vec(0,255,0)," LINE: "+Arg1+" DIRECTION: "+Arg2)
+}
+elseif(Command=="!SF"){
+    hideChat(1)
+    Text = "Special Drive"
+    Direction=Text
+    LINE="999"
+    TXTPOS=vec2(60,20)
+    TXTCOLOR=vec(255,0,0)
+    chatPrint(vec(255,110,0),"[B"+LINE+"]",vec(255,255,0),"New Mode: Special Drive" )
+}
+
+if (Command=="!sv"&Arg1){
+        savePos(Arg1:lower(), owner():pos())
+        print("Position Saved as "+Arg1)
+}
+}
+#GLOBAL CHAT COMMANDS
+if (chatClk()){
+    LastSaid2=lastSaid():explode(" ")
+    Command2 = LastSaid2[1,string]
+    Argu1 = LastSaid2[2,string]
+    Argu2 = LastSaid2[3,string]
+    
+    if(Command2=="!stop")
+    {
+        SIGNCOLOR=vec(255,0,0)
+        N2="BUS"
+        N3="STOPS"
+        chatPrint(vec(255,110,0),"[B"+LINE+"]",vec(255,255,0),"!!ATTENTION!!! THE BUS WILL STOP AT THE NEXT STATION" )
+    }
+}
+#SYSTEM B
+
+CurrentStation = getCurrentStation()
+if(changed(CurrentStation) & CurrentStation){
+    chatPrint(vec(255,110,0),"[B"+LINE+"]",vec(0,255,255),"Next Station: "+ CurrentStation)
+    S:soundPlay(10,10,"ambient/alarms/portal_elevator_chime.wav")
+    ST=CurrentStation
+    timer("soundstop",2000)
+}
+if(clk("soundstop")){
+    soundStop(10)
+}
+
+if(Distance<200){
+    SIGNCOLOR=vec(100,100,100)
+    N2=""
+    N3=""
+}
+
+#EGP SCREEN
+
+
+H=time("hour")+1
+M=time("min")
+S1=time("sec")
+
+if(H<10){
+    HH="0"+H:toString()
+}
+else{
+    HH=H:toString()
+}
+if(M<10){
+    MM="0"+M:toString()
+}
+else{
+    MM=M:toString()
+}
+if(S1<10){
+    SS="0"+S1:toString()
+}
+else{
+    SS=S1:toString()
+}
+
+TIME=HH+":"+MM+":"+SS
+
+
+
+EGP:egpBox(1,vec2(250,250),vec2(550,550))
+EGP:egpColor(1,vec(0,0,165))
+
+EGP2=EGP
+
+EGP:egpBox(2,vec2(400,240),vec2(200,200))
+EGP:egpColor(2,SIGNCOLOR)
+
+EGP2=EGP
+
+EGP:egpBox(3,vec2(255,60),vec2(500,100))
+EGP:egpColor(3,vec(50,50,50))
+
+EGP:egpBox(4,vec2(255,430),vec2(500,150))
+EGP:egpColor(4,vec(150,150,0))
+
+EGP2=EGP
+
+EGP:egpText(5,"Next Station:",vec2(15,350))
+EGP:egpSize(5,44)
+EGP:egpColor(5,vec(0,0,0))
+
+EGP2=EGP
+
+EGP:egpText(6,CurrentStation,vec2(15,390))
+EGP:egpSize(6,85)
+EGP:egpColor(6,vec(0,0,0))
+
+EGP2=EGP
+
+EGP:egpText(7,N2,vec2(340,150))
+EGP:egpSize(7,70)
+EGP:egpColor(7,vec(0,0,0))
+
+EGP2=EGP
+
+EGP:egpText(8,N3,vec2(305,250))
+EGP:egpSize(8,70)
+EGP:egpColor(8,vec(0,0,0))
+
+EGP2=EGP
+
+EGP:egpBox(9,vec2(143,240),vec2(270,100))
+EGP:egpColor(9,vec(150,150,150))
+
+EGP2=EGP
+
+EGP:egpSize(10,70)
+EGP:egpColor(10,vec(0,0,0))
+EGP:egpText(10,TIME,vec2(10,200))
+
+EGP2=EGP
+
+EGP:egpText(11,Text,TXTPOS)
+EGP:egpSize(11,70)
+EGP:egpColor(11,TXTCOLOR)
+
+EGP2=EGP

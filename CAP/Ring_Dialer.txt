@@ -1,0 +1,70 @@
+@name Ring Dialer
+@inputs Ring:wirelink
+@outputs 
+@persist Wert E:entity A:entity G:string S:string
+@trigger 
+
+runOnTick(1)
+
+if(first()|dupefinished()){
+    printColor(vec(255,0,0),"[RING]",vec(120,0,120),"Type !rhelp to get a Command list")
+    printColor(vec(255,0,0),"[RING]",vec(120,0,120),"E2 made by [XCO][CDG] Rainbow Dash")
+    
+}
+
+runOnChat(1)
+
+##CHAT##
+
+if (chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Argu1 = LastSaid[2,string]
+    
+    if(Command=="!rhome"){
+        findIncludeClass("ring_base_goauld")
+        findIncludeClass("ring_base_ancient")
+        findIncludeClass("ring_base_ori")
+        N = findInSphere(owner():pos(), 50)
+        printColor(vec(255,0,0),"[RING]",vec(120,0,120),"Dialing the Rings where you are standing")
+        E = findResult(1)
+        Ring["Dial Address",string]=E:stargateRingAddress()
+        hideChat(1)
+        timer("ringDial0",100)
+    }
+    elseif(Command=="!rdial"){
+        Ring["Dial Address",string]=Argu1
+        printColor(vec(255,0,0),"[RING]",vec(120,0,120),"Dialing:"+Argu1)
+        hideChat(1)
+        timer("ringDial0",100)
+    }
+    elseif(Command=="!rblock"){
+        if(Argu1=="1"){
+            Ring["UnUsable",normal]=1
+            hideChat(1)
+            printColor(vec(255,0,0),"[RING]",vec(120,0,120),"Ring Transporter Blocked")
+        }
+        if(Argu1=="0"){
+            Ring["UnUsable",normal]=0
+            hideChat(1)
+            printColor(vec(255,0,0),"[RING]",vec(120,0,120),"Ring Transporter Unblocked")
+        }
+    }
+    elseif(Command=="!rhelp"){
+        printColor(vec(255,0,0),"[RING]",vec(120,0,120),"Type '!rhome' to dial the R.T. where you are standing")
+        printColor(vec(255,0,0),"[RING]",vec(120,0,120),"Type '!rdial <dial Adress>' to dial the entered Adress")
+        printColor(vec(255,0,0),"[RING]",vec(120,0,120),"Type '!rblock <1/0>' to enable/disable the ring Blockation")
+        hideChat(1)
+}
+}
+##SYSTEM##
+
+
+if(clk("ringDial0")){
+    Ring["Dial Address",string]=""
+}
+if(Ring:stargateRingAddress()==""){
+    A=Ring:entity()
+    S=A:id():toString()
+    Ring:stargateRingSetAddress(S)
+}

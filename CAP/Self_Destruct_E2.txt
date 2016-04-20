@@ -48,14 +48,14 @@ if (chatClk(owner())){
         hideChat(1)
     }
     elseif(Command=="!destruct"){
-        botSay("[SELF-DESTRUCT]",vec(255,255,0),"SELF-DESTRUCT SEQUENCE HAS BEEN INITIATED!")
+        chatPrint(vec(255,255,0),"[SELF-DESTRUCT]",vec(255,0,0),"SELF-DESTRUCT SEQUENCE HAS BEEN INITIATED!")
         Entity:soundPlay(100,100,"alarm/area51_alert.wav")
         Time=1
         NaqBomb["Detonate",normal]=1
         timer("SD",1000)
     }
     elseif(Command=="!abort"){
-        botSay("[SELF-DESTRUCT]",vec(255,255,0),"SELF-DESTRUCT SEQUENCE ABORTED!")
+        chatPrint(vec(255,255,0),"[SELF-DESTRUCT]",vec(0,155,0),"SELF-DESTRUCT SEQUENCE ABORTED!")
         soundStop(100)
         Time=0
         NaqBomb["Abort",normal]=1
@@ -75,7 +75,7 @@ if (chatClk(owner())){
 ##########SYSTEM############
 if(Time>0)
 {
-    botSay("[SELF-DESTRUCT]",vec(255,255,0),NaqBomb["Countdown Timer",normal]+" Seconds Left")
+    chatPrint(vec(255,255,0),"[SELF-DESTRUCT]",vec(255,0,0),NaqBomb["Countdown Timer",normal]+" Seconds Left")
 }
 
 if(clk("SD"))

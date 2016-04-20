@@ -1,0 +1,109 @@
+@name Horizon-Control
+@inputs Horizon:wirelink
+@outputs
+@persist Fire SCount CCount
+@trigger 
+
+runOnTick(1)
+
+if(first()|dupefinished()){
+    print("write '!horizon help' to get a Command list")
+    print("E2 made by [XCO][CDG]Rainbow Dash")
+}
+
+##Chat##
+runOnChat(1)
+
+if (chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Argu1 = LastSaid[2,string]
+    Argu2 = LastSaid[3,string]
+    Argu3 = LastSaid[4,string]
+    
+    
+    
+    if(Command=="!horizon"){
+        hideChat(1)
+        if(Argu1=="help"){
+            print("The Main Command is: !horizon")
+            print("use 'target <1-6> <Target>' as Argument for the Main Commannd to set Targets")
+            print("use 'fire' as Argument to Start the Fire Sequence")
+            print("use 'set <SC/RC> <Seconds>' as Argument to set the Counter")
+        }
+        elseif(Argu1=="fire"){
+            Fire=1
+            chatPrint(vec(255,0,0),"ROCKET START IN: "+(SCount/1000):toString()+" Seconds")
+            timer("Fire",SCount)
+        }
+        elseif(Argu1=="target"){
+            if(Argu2=="1"){
+                print("Target "+Argu2+" set to:"+findPlayerByName(Argu3):toString())
+                Horizon["HitPos1",vector]=findPlayerByName(Argu3):pos()
+                hideChat(1)
+            }
+            elseif(Argu2=="2"){
+                print("Target "+Argu2+" set to:"+findPlayerByName(Argu3):toString())
+                Horizon["HitPos2",vector]=findPlayerByName(Argu3):pos()
+                hideChat(1)
+            }
+            elseif(Argu2=="3"){
+                print("Target "+Argu2+" set to:"+findPlayerByName(Argu3):toString())
+                Horizon["HitPos3",vector]=findPlayerByName(Argu3):pos()
+                hideChat(1)
+            }
+            elseif(Argu2=="4"){
+                print("Target "+Argu2+" set to:"+findPlayerByName(Argu3):toString())
+                Horizon["HitPos4",vector]=findPlayerByName(Argu3):pos()
+                hideChat(1)
+            }
+            elseif(Argu2=="5"){
+                print("Target "+Argu2+" set to:"+findPlayerByName(Argu3):toString())
+                Horizon["HitPos5",vector]=findPlayerByName(Argu3):pos()
+                hideChat(1)
+            }
+            elseif(Argu2=="6"){
+                print("Target "+Argu2+" set to:"+findPlayerByName(Argu3):toString())
+                Horizon["HitPos6",vector]=findPlayerByName(Argu3):pos()
+                hideChat(1)
+            }
+            elseif(Argu2=="*"){
+                Horizon["HitPos1",vector]=findPlayerByName(Argu3):pos()
+                Horizon["HitPos2",vector]=findPlayerByName(Argu3):pos()
+                Horizon["HitPos3",vector]=findPlayerByName(Argu3):pos()
+                Horizon["HitPos4",vector]=findPlayerByName(Argu3):pos()
+                Horizon["HitPos5",vector]=findPlayerByName(Argu3):pos()
+                Horizon["HitPos6",vector]=findPlayerByName(Argu3):pos()
+                print("All targets set to:"+findPlayerByName(Argu3):toString())
+            }
+            else{
+                print("No possible Action")
+            }
+        }
+        elseif(Argu1=="set"){
+            if(Argu2=="SC"){
+                SCount=Argu3:toNumber()*1000
+                print("Start Countdown set to:"+Argu3+"Seconds")
+            }
+            elseif(Argu2=="RC"){
+                CCount=Argu3:toNumber()*1000
+                print("Start Cover Release Counter set to:"+Argu3+"Seconds")
+            }
+        }
+    }
+}
+
+##SYSTEM##
+
+if(clk("Fire")){
+    Horizon["Engine",normal]=1
+    timer("FOFF",CCount)
+}
+if(clk("FOFF")){
+    Horizon["Engine",normal]=0
+    Horizon["Release Covers",normal]=1
+    timer("LAUNCH",1000)
+}
+if(clk("LAUNCH")){
+    Horizon["Fire",normal]=1
+}

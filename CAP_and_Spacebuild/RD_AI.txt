@@ -1,0 +1,2640 @@
+@name RD-AI
+@inputs  EGP:wirelink
+@persist [Core,Shield,EnergyCore,WaterCore,RefinementCore,WaterCollector,Node,LifeSupport,Engine,Sensor,Pad,Cloak,Computer,SD,Shield_ID]:wirelink
+@persist [G,AIUseOk,X,LoadBar1,ConnectedSys,TarAq,Strenght,FireRate,Evacuate,SelfDestruct,SelfDestructTime,Zoomm,LockCol,ET]:number
+@persist [BLoc,WLoc,TorpType,TarEnt,TarEl,Lang]:table
+@persist [Cursor]:vector2
+@persist [User,Target,O,TOwner,E]:entity
+@persist [Name,Orders,LS]:string
+@persist [Players,Stuff,EnergyWeapons,Torpedos,Turrets,Rockets,AllWeapons,SoundEmitter,Lights,TractorEmitter,LSE,Doors]:array
+@persist [Color,WarpDest]:vector
+@autoupdate
+#################MADE BY SuperPlayer#########################################
+#Version 2.0
+#Release date 19.02.2015
+#Last Update 14.03.2015
+
+if(first()| duped()){
+    runOnHTTP(1)
+    #print(_HUD_PRINTCENTER,"Ship AI by SuperPlayer")
+    print(_HUD_PRINTCENTER,"Ship AI reprogrammed by [XCO][CDG] Rainbow Dash")
+    Name = "Rainbow AI"
+    E = entity()
+    O = owner()
+    Map = map()
+    EGP:egpClear()
+    ET=0
+    #Stuff = E:getConstraints()
+    
+    #If you get a Tick-Quota remove the Commend symbols of the following and comment the Stuff = E:getConstraints() in line 25
+    findClearBlackList()
+    findClearWhiteList()
+    findExcludeClass("prop_physics")
+    findIncludePlayerProps(O)
+    findInSphere(E:pos(),4500)
+    Stuff = findToArray()
+    
+    
+    
+
+    G = 0
+
+function number wirelink:button(Cursor:vector2,ID:number){
+        local BPos = This:egpPos(ID)
+        local BSize = This:egpSize(ID)/2
+        local Pressed = inrange(Cursor,BPos-BSize,BPos+BSize)
+        return Pressed
+    }
+    
+function void say ([String]:string)
+    {                
+            owner():soundPlay(999,3,"st/shuttlecraft/computer_respond.mp3")
+            printColor(vec(100,230,200),"[AI] ",vec(0,180,255),Name+": ",vec(230),String)
+    }
+
+function void warn ([String]:string)
+    {                
+            printColor(vec(100,230,200),"[AI] ",vec(255,0,0),"[WARNING]:",vec(230),String)
+            owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")
+            
+    }	
+
+function string translate(Text:string, Language:string){
+    T = toChar(34)# 34 = " in decimal
+    BT = "class="+T+"t0"+T+">"
+    Link = "http://translate.google.com/m?hl="+Language+"&sl=auto&q="+Text:replace(" ", "+")
+    httpRequest(Link)
+    Page = httpData()
+    Result = Page:sub(Page:find(BT)+BT:length())
+    Result = Result:explode("<")[1, string]
+    Result = Result:replace("&#39;","'")
+    return Result
+}
+    
+    TorpType["Photon",number] = 1
+    TorpType["Quantum",number] = 2
+    TorpType["Plasma",number] = 3
+    TorpType["Transphasic",number] = 4
+    TorpType["Croniton",number] = 5
+    TorpType["Transphasic Croniton",number] = 6
+    TorpType["Biomolecular",number] = 7
+    TorpType["Tricobalt",number] = 8
+    
+    TarEnt["core",string] = "ship_core"
+    TarEnt["shuttle11",string] = "st_shuttle_type11"
+    TarEnt["jumper",string] = "puddle_jumper"
+    TarEnt["shield",string] = "st_shield_emitter"
+    TarEnt["pad",string] = "st_transporter_pad"
+    TarEnt["glider",string] = "sg_vehicle_glider"
+    TarEnt["gateglider",string] = "sg_vehicle_gate_glider"
+    
+    
+    TarEl["ship_core",vector] = vec(0,0,0)
+    TarEl["st_shuttle_type11",vector] = vec(0,0,200)
+    
+    WLoc["pegasus",vector] = vec( 845.86, -10040.36, 8364.96 )
+    WLoc["station",vector] = vec( 5336.78, -6931.02, 8463.31 )
+    WLoc["shakuras",vector] = vec( -8118.48, -6986.96, 8239.75 )
+    WLoc["milkyway",vector] = vec( -5799.58, 3532.89, 8082.69 )
+    WLoc["earth",vector] = vec( -150.93, 8971.97, 8795.55 )
+    WLoc["moon",vector] = vec( -4647.44, 14023.64, 10500.27 )
+    WLoc["universe",vector] = vec( 7908, -3071, -5167 )
+    WLoc["hiigara",vector] = vec( 7225.12, 9675.67, -4547 )
+    WLoc["desert",vector] = vec( 10648.09, -9053.20, -8542.30 )
+    WLoc["lava",vector] = vec( -9738.13, 99.13, -2981.89 )
+    
+    
+    BLoc["station",vector] = vec( 6558.05, -6906.54, 8928.03 )
+    BLoc["shakuras",vector] = vec( -6472.23, -9715.74, 6848.03 )
+    BLoc["earth",vector] = vec( 2817.54, 7903.57, 8080.03 )
+    BLoc["moon",vector] = vec( -4503.62, 13791.30, 9952.05 )
+    BLoc["hiigara",vector] = vec( 7220.36, 12682.76, -6015.97 )
+    BLoc["desert",vector] = vec( 10497.03, -11852.95, -9279.97 )
+    BLoc["lava",vector] = vec( -11248.43, 795.57, -4639.97 )
+    BLoc["build",vector] = vec( 10587.84, 15530.74, -16167.97 )
+    BLoc["secret",vector] = vec( -7.85, -3.07, -15839.97 )
+    BLoc["spawn",vector] = vec( 62.10, 2.43, 16080.03 )
+    
+    Lang["german",string] = "de"
+    Lang["english",string] = "en"
+    Lang["french",string] = "fr"
+    Lang["russian",string] = "ru"
+    Lang["spanish",string] = "es"
+    
+    EnergyWeapons = array()
+    Doors =array()
+    Turrets = array()
+    Torpedos = array()
+    
+    
+    
+timer("startegp",100)
+}
+
+if(clk("startegp")){
+    
+    
+        EGP:egpBox(1,vec2(256,256),vec2(512,512))
+        EGP:egpColor(1,vec(25,25,25))
+
+        EGP:egpLine(2,vec2(14,15),vec2(116,15))      
+        EGP:egpLine(3,vec2(100,15),vec2(108,4))     
+        EGP:egpLine(4,vec2(105,15),vec2(112,5))
+        EGP:egpLine(5,vec2(110,15),vec2(117,5))
+        EGP:egpLine(6,vec2(115,15),vec2(122,5))
+        EGP:egpLine(7,vec2(106,5),vec2(412,5))
+        EGP:egpLine(8,vec2(410,4),vec2(417,15))
+        EGP:egpLine(9,vec2(406,5),vec2(412,15))
+        EGP:egpLine(10,vec2(400,5),vec2(408,15))
+        EGP:egpLine(11,vec2(395,5),vec2(403,15))
+        EGP:egpLine(12,vec2(402,15),vec2(499,15))
+      
+    #RightSide
+        
+        EGP:egpLine(13,vec2(497,15),vec2(497,50))
+        for(F=2,13){ EGP:egpSize(F,5) }
+        EGP:egpLine(14,vec2(500,49),vec2(500,151))
+        EGP:egpSize(14,12)
+        EGP:egpLine(15,vec2(497,44),vec2(505,50))
+        EGP:egpSize(15,5)
+        EGP:egpLine(16,vec2(497,149),vec2(504,156))
+        EGP:egpSize(16,5)
+        EGP:egpLine(17,vec2(504,150),vec2(504,350))
+        EGP:egpSize(17,5)
+        EGP:egpLine(18,vec2(500,449),vec2(500,347))
+        EGP:egpSize(18,12)
+        EGP:egpLine(19,vec2(504,342),vec2(497,349))
+        EGP:egpSize(19,5)
+        EGP:egpLine(20,vec2(504,448),vec2(497,455))
+        EGP:egpSize(20,5)
+        EGP:egpLine(21,vec2(497,445),vec2(497,497))
+        EGP:egpSize(21,5)
+        
+      #LeftSide
+    
+        EGP:egpLine(22,vec2(16,15),vec2(16,50))
+        EGP:egpSize(22,5)
+        EGP:egpLine(23,vec2(12,49),vec2(12,151))
+        EGP:egpSize(23,12)
+        EGP:egpLine(24,vec2(15,44),vec2(8,50))
+        EGP:egpSize(24,5)
+        EGP:egpLine(25,vec2(16,149),vec2(8,158))
+        EGP:egpSize(25,5)
+        EGP:egpLine(26,vec2(9,150),vec2(9,350))
+        EGP:egpSize(26,5)
+        EGP:egpLine(27,vec2(12,450),vec2(12,349))
+        EGP:egpSize(27,12)
+        EGP:egpLine(28,vec2(8,342),vec2(16,351))
+        EGP:egpSize(28,5)
+        EGP:egpLine(29,vec2(8,448),vec2(15,455))
+        EGP:egpSize(29,5)
+        EGP:egpLine(30,vec2(16,445),vec2(16,497))
+        EGP:egpSize(30,5)
+    
+      #DownSide
+
+        EGP:egpLine(31,vec2(15,497),vec2(120,497))
+        EGP:egpSize(31,5)
+        
+        EGP:egpLine(32,vec2(118,500),vec2(231,500))
+        EGP:egpSize(32,12)
+        EGP:egpLine(33,vec2(112,497),vec2(119,504))
+        EGP:egpSize(33,5)
+        EGP:egpLine(34,vec2(229,497),vec2(236,504))
+        EGP:egpSize(34,5)
+        EGP:egpLine(35,vec2(210,504),vec2(315,504))
+        EGP:egpSize(35,5)
+        EGP:egpLine(36,vec2(310,500),vec2(392,500))
+        EGP:egpSize(36,12)
+        EGP:egpLine(37,vec2(305,504),vec2(312,497))
+        EGP:egpSize(37,5)
+        EGP:egpLine(38,vec2(398,497),vec2(391,504))
+        EGP:egpSize(38,5)
+        EGP:egpLine(39,vec2(390,497),vec2(498,497))
+        EGP:egpSize(39,5)
+       for(F=2,39){ EGP:egpColor(F,vec(0,100,230)) }
+        
+        EGP:egpBox(40,vec2(256,300),vec2(300,150))
+        EGP:egpSize(40,10)
+        EGP:egpColor(40,vec(100,100,100))
+        EGP:egpBoxOutline(41,vec2(256,300),vec2(300,150))
+        EGP:egpSize(41,10)
+        EGP:egpColor(41,vec(0,0,0))
+        EGP:egpBox(42,vec2(256,330),vec2(270,30))
+        EGP:egpSize(42,10)
+        EGP:egpColor(42,vec(0,0,0))
+        EGP:egpLine(43,vec2(128,330),vec2(128+LoadBar1*2.6,330))
+        EGP:egpSize(43,10)
+        EGP:egpColor(43,vec(255,255,255))
+        EGP:egpText(44,"Loading...",vec2(130,295))
+        EGP:egpText(45,LoadBar1+"%",vec2(350,255))
+        EGP:egpText(46,"",vec2(256,345))
+        EGP:egpAlign(46,1)        
+        
+    EGP:egpText(901,"Made by SuperPlayer",vec2(5,500))
+    EGP:egpSize(901,12)
+    
+                
+    stoptimer("startegp")
+    timer("wireship",100)
+
+}
+if(clk("wireship")){
+LoadBar1++
+    
+    if(LoadBar1 > 35){
+        stoptimer("wireship")
+        stoptimer("wire2")
+        timer("setvars",100)
+        if(Core){ConnectedSys++}
+        if(Shield){ConnectedSys++}
+        if(Node){ConnectedSys++}
+        if(EnergyCore){ConnectedSys++}
+        if(WaterCore){ConnectedSys++}
+        if(RefinementCore){ConnectedSys++}
+        if(LifeSupport){ConnectedSys++}
+        if(Engine){ConnectedSys++}
+        if(Sensor){ConnectedSys++}
+        if(Pad){ConnectedSys++}
+        if(Cloak){ConnectedSys++}
+        if(Computer){ConnectedSys++}
+        if(Shield_ID){ConnectedSys++}
+        ConnectedSys = ConnectedSys+EnergyWeapons:count()+Turrets:count()+Torpedos:count()+Rockets:count()+Lights:count()+SoundEmitter:count()+TractorEmitter:count()+Doors:count()
+        EGP:egpSetText(46,"Connected Systems: "+ConnectedSys)
+        
+        
+
+    }
+    else{
+        
+        EGP:egpLine(43,vec2(128,330),vec2(128+LoadBar1*2.6,330))
+        EGP:egpSetText(45,LoadBar1+"%")
+        EGP:egpSetText(44,"Connecting to Ship Systems...")
+         timer("wire2",20)          
+        
+        
+                
+        
+            
+        timer("wireship",Stuff:count())
+        }
+}
+if(clk("wire2")){
+    if(G < Stuff:count()){
+            G++
+            V = Stuff[G,entity]
+
+        
+
+                if(V:type() == "ship_core_asgard" & !Core){
+                    Core = V:wirelink()
+                    
+                                            } 
+                elseif(V:type() == "shield_generator" | V:type() == "shield_core" & !Shield){
+                    Shield = V:wirelink()
+                   
+                                            } 
+                elseif(V:type() == "storage_cache" && !Node){
+                    Node = V:wirelink()
+                   
+                                            }            
+                elseif(V:type() == "stargazer_energy_core" && !EnergyCore){
+                    EnergyCore = V:wirelink()
+                   
+                                            }
+                elseif(V:type() == "stargazer_water_core" && !WaterCore){
+                    WaterCore = V:wirelink()
+                   
+                                            } 
+                elseif(V:type() == "stargazer_refinement_core" && !RefinementCore){
+                    RefinementCore = V:wirelink()
+                   
+                                            }
+                elseif(V:type() == "stargazer_ls_core" && !LifeSupport){
+                    LifeSupport = V:wirelink()
+                    LifeSupport["Name",string] = Name
+                   
+                                            }      
+                                            
+                elseif(V:type() == "warpdrive" && !Engine){
+                    Engine = V:wirelink()
+                   
+                                            }
+                elseif(V:type() == "shield_identifier" && !Shield_ID){
+                    Shield_ID = V:wirelink()
+                   
+                                            }
+                elseif(V:type() == "sensor_array" && !Sensor){
+                    Sensor = V:wirelink()
+                   
+                                            }     
+                 elseif(V:type() == "transporter" && !Pad){
+                    Pad = V:wirelink()
+                   
+                                            }
+                elseif(V:type() == "cloaking_generator" && !Cloak){
+                    Cloak = V:wirelink()
+                   
+                                            }
+                elseif(V:type() == "sbep_base_door_controller" | V:type() == "cap_doors_frame"){
+                    local Door = V:wirelink()
+                    Doors:pushWirelink(Door)
+                    Door["Lock_1",number]=0
+                    Door["Lockdown",number]=0
+                   
+                                            }
+                elseif(V:type() == "computer_core" && !Computer){
+                    Computer = V:wirelink()
+                }
+                elseif(V:type() == "sc_self_destruct" && !SD){
+                    SD = V:wirelink()
+                   
+                                            }
+                elseif(V:type() == "asgard_beam" | V:type() == "sg_turret_destmain" | V:type() == "sg_turret_destsmall" | V:type() == "sg_turret_destmed" | V:type() == "ori_beam_cannon"){
+                    local P = V:wirelink()
+                    EnergyWeapons:pushWirelink(P)
+                    P["Fire",number] = 0
+                    P["Active",number] = 1
+                                    }
+                elseif(V:type() == "launcher_drones"){
+                local P = V:wirelink()
+                    Turrets:pushWirelink(P)
+                    P["Launch",number] = 0
+                    P["Lock",number] = 1
+                    P["Open",number] = 1
+                }
+                elseif(V:type() == "torpedo_launcher" | V:type() == "cruise_missile_launcher"| V:type() == "sam_missile_launcher"){
+                local P = V:wirelink()
+                    Torpedos:pushWirelink(P)
+                    P["Fire",number] = 0
+                }
+                elseif(V:type() == "gmod_wire_soundemitter"){
+                local P = V:wirelink()
+                    SoundEmitter:pushWirelink(P)
+                    P["Stop",number] = 1
+                }
+                elseif(V:type() == "gmod_wire_light"){
+                local P = V:wirelink()
+                    Lights:pushWirelink(P)
+                    P["RGB",vector] = vec(0)
+                }
+                elseif(V:type() == "tractor_emitter"){
+                local P = V:wirelink()
+                    TractorEmitter:pushWirelink(P)
+                } 
+                        }                               
+            else{stoptimer("wire2")}
+timer("wire2",20)  
+#printTable(Stuff)            
+}
+
+if(clk("setvars")){
+    LoadBar1++
+    
+    if(LoadBar1 > 55){
+        stoptimer("setvars")
+        Zoom = 47
+        EGP:egpSetText(46,"All Vars are set.")
+        
+        timer("setrest",100)
+    }
+    else{
+        EGP:egpLine(43,vec2(128,330),vec2(128+LoadBar1*2.6,330))
+        EGP:egpSetText(45,LoadBar1+"%")
+        EGP:egpSetText(44,"Setting Vars...")
+        
+            Evacuate = 0
+            SelfDestruct = 0
+            SelfDestructTime = 60
+            Zoom = 47
+            SensorEnt = E
+            Strenght = 10
+            FireRate  = 10
+            LockCol = 1
+            Core["Enable Plating",number] = 1
+            Target = noentity()
+            Beam1 = noentity()
+            Beam2 = noentity()
+            WarpDest = vec(0)
+        
+        
+        timer("setvars",200)
+    }
+}
+
+if(clk("setrest")){
+    LoadBar1++
+    
+    if(LoadBar1 > 100){
+        stoptimer("setrest")
+        EGP:egpSetText(46,"All Vars are set.")
+        timer("initegp",100)
+        
+        
+        AIUseOk = 1
+        Color = vec(145)
+        
+    }
+    else{
+        EGP:egpLine(43,vec2(128,330),vec2(128+LoadBar1*2.6,330))
+        EGP:egpSetText(45,LoadBar1+"%")
+        EGP:egpSetText(44,"Setting the rest...")
+        timer("setrest",200)
+        
+        
+        
+} 
+}
+if(clk("initegp")){
+    EGP:egpRemove(40)
+    EGP:egpRemove(41)
+    EGP:egpRemove(42)
+    EGP:egpRemove(43)
+    EGP:egpRemove(44)
+    EGP:egpRemove(45)
+    EGP:egpRemove(46)
+    
+    EGP:egpLine(40,vec2(110,15),vec2(110,497))
+    EGP:egpSize(40,5)
+    EGP:egpColor(40,vec(0,100,230))
+    
+    ####MENU#####
+    EGP:egpBox(41,vec2(62,50),vec2(75,30))
+    EGP:egpColor(41,vec(0,100,230))
+    EGP:egpBoxOutline(42,vec2(62,50),vec2(75,30))
+    EGP:egpColor(42,vec(255,255,255))
+    EGP:egpText(43,"Status",vec2(30,45))
+    EGP:egpSize(43,15)    
+    
+    EGP:egpBox(44,vec2(62,100),vec2(75,30))
+    EGP:egpColor(44,vec(0,200,230))
+    EGP:egpBoxOutline(45,vec2(62,100),vec2(75,30))
+    EGP:egpColor(45,vec(255,255,255))
+    EGP:egpText(46,"Tactical",vec2(30,95))
+    EGP:egpSize(46,15)    
+    
+    EGP:egpBox(47,vec2(62,150),vec2(75,30))
+    EGP:egpColor(47,vec(0,200,230))
+    EGP:egpBoxOutline(48,vec2(62,150),vec2(75,30))
+    EGP:egpColor(48,vec(255,255,255))
+    EGP:egpText(49,"Engenering",vec2(30,145))
+    EGP:egpSize(49,15)    
+    
+    EGP:egpBox(50,vec2(62,200),vec2(75,30))
+    EGP:egpColor(50,vec(0,200,230))
+    EGP:egpBoxOutline(51,vec2(62,200),vec2(75,30))
+    EGP:egpColor(51,vec(255,255,255))
+    EGP:egpText(52,"Sensoren",vec2(30,195))
+    EGP:egpSize(52,15)    
+    
+    EGP:egpBox(53,vec2(62,250),vec2(75,30))
+    EGP:egpColor(53,vec(0,200,230))
+    EGP:egpBoxOutline(54,vec2(62,250),vec2(75,30))
+    EGP:egpColor(54,vec(255,255,255))
+    EGP:egpText(55,"Warp",vec2(30,245))
+    EGP:egpSize(55,15)   
+    
+    stoptimer("initegp")
+    
+    EGP:egpText(56,"Ship Status",vec2(140,15))
+    EGP:egpSize(56,40)
+
+    EGP:egpText(57,"Ship Name: "+Name,vec2(120,70))
+    EGP:egpText(59,"Ship Captain: "+O:steamID(),vec2(120,130))
+    
+    EGP:egpLine(60,vec2(120,180),vec2(495,180))
+    
+    EGP:egpBox(61,vec2(170,240),vec2(80,50))
+    EGP:egpColor(61,vec(0,180,255))
+    EGP:egpBoxOutline(62,vec2(170,240),vec2(80,50))
+    EGP:egpText(63,"Shields",vec2(170,230))
+    EGP:egpAlign(63,1)
+    
+    EGP:egpBox(64,vec2(170,320),vec2(80,50))
+    EGP:egpColor(64,vec(0,180,255))
+    EGP:egpBoxOutline(100,vec2(170,320),vec2(80,50))
+    EGP:egpText(101,"Cloak",vec2(170,310))
+    EGP:egpAlign(101,1)
+    
+    EGP:egpBox(67,vec2(170,400),vec2(80,50))
+    EGP:egpColor(67,vec(0,180,255))
+    EGP:egpBoxOutline(68,vec2(170,400),vec2(80,50))
+    EGP:egpText(69,"Life Support",vec2(170,390))
+    EGP:egpAlign(69,1)
+    EGP:egpSize(69,13)
+    
+    EGP:egpBoxOutline(70,vec2(360,320),vec2(240,210))
+    EGP:egpLine(71,vec2(240,260),vec2(480,260))
+    EGP:egpText(72,"All systems are good",vec2(360,230))
+    EGP:egpColor(72,vec(0,255,0))
+    EGP:egpAlign(72,1)
+    
+    EGP:egpBox(73,vec2(300,380),vec2(80,50))
+    EGP:egpColor(73,vec(0,180,255))
+    EGP:egpBoxOutline(74,vec2(300,380),vec2(80,50))
+    EGP:egpText(75,"Evacuate",vec2(300,370))
+    EGP:egpAlign(75,1)
+    
+    EGP:egpBox(76,vec2(420,380),vec2(80,50))
+    EGP:egpColor(76,vec(0,180,255))
+    EGP:egpBoxOutline(77,vec2(420,380),vec2(80,50))
+    EGP:egpText(78,"Selfdestruct",vec2(420,370))
+    EGP:egpAlign(78,1)
+    EGP:egpSize(78,15)
+    
+    EGP:egpLine(79,vec2(130,460),vec2(480,460))
+    EGP:egpSize(79,15)
+    EGP:egpColor(79,vec(100,100,100))
+    EGP:egpLine(80,vec2(130,460),vec2(130+Computer["Aux Power",number]*3.5,460))
+    EGP:egpSize(80,15)
+    EGP:egpColor(80,vec(0,Computer["Aux Power",number]*1.8,Computer["Aux Power",number]*2.55))
+    EGP:egpText(81,"Auxiliary Power",vec2(300,450))
+    EGP:egpAlign(81,1)
+    
+    EGP:egpText(82,"",vec2(360,280))
+    EGP:egpAlign(82,1)
+    EGP:egpText(83,"",vec2(360,320))
+    EGP:egpAlign(83,1)
+    EGP:egpText(84,"Ship Type: "+Core:entity():toString(),vec2(120,160))
+    
+    EGP:egpCircle(85,vec2(420,100),vec2(60,60))
+    if(Core["Type",string] == "Standart"){
+    EGP:egpColor(85,vec(200))
+    }
+    elseif(Core["Type",string] == "Tactical"){
+    EGP:egpColor(85,vec(255,0,0))
+    }
+    elseif(Core["Type",string] == "Science"){
+    EGP:egpColor(85,vec(0,0,255))
+    }
+    elseif(Core["Type",string] == "Engineering"){
+    EGP:egpColor(85,vec(255,255,0))
+    }
+    EGP:egpCircle(86,vec2(420,100),vec2(55,55))
+    EGP:egpColor(86,vec(120,120,120))
+    EGP:egpTriangle(87,vec2(420,40),vec2(380,130),vec2(460,130))
+    EGP:egpColor(87,vec(255,200,0))
+    EGP:egpTriangle(88,vec2(420,110),vec2(380,130),vec2(460,130))
+    EGP:egpColor(88,vec(120,120,120))
+    EGP:egpRoundedBox(89,vec2(420,85),vec2(140,20))
+    EGP:egpColor(89,vec(255,220,0))
+    EGP:egpRoundedBox(90,vec2(420,150),vec2(120,20))
+    EGP:egpColor(90,vec(255,220,0))
+    EGP:egpText(91,Name,vec2(420,75))
+    EGP:egpAlign(91,1)
+    EGP:egpColor(91,vec(0))
+    EGP:egpText(92,"Admin-Vessel",vec2(420,143))
+    EGP:egpAlign(92,1)
+    EGP:egpColor(92,vec(0))
+    EGP:egpSize(92,15)
+    timer("think",1500)
+    timer("status",100)
+    timer("egp",100)
+    
+    }
+
+if(clk("egp")){
+    
+User = EGP["User",entity]
+#Get the position of their cursor on the screen
+Cursor = EGP:egpCursor(User)
+#Get whether the person is pressing use
+Use = User:keyUse()
+#If I press use on the screen...
+if(changed(Use) & Use){
+    if(EGP:button(Cursor,41)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        timer("status",100)
+        stoptimer("tactical")
+        stoptimer("engineering")
+        stoptimer("sensoren")
+        stoptimer("warpmain")
+        stoptimer("warpcoordinates")
+        stoptimer("warplocations")
+        
+        EGP:egpColor(41,vec(0,100,230))
+        EGP:egpColor(44,vec(0,200,230))
+        EGP:egpColor(47,vec(0,200,230))
+        EGP:egpColor(50,vec(0,200,230))
+        EGP:egpColor(53,vec(0,200,230))
+        for(F=56,500){
+            EGP:egpRemove(F)
+        }
+	EGP:egpText(56,"Ship Status",vec2(140,15))
+    EGP:egpSize(56,40)
+
+    EGP:egpText(57,"Ship Name: "+Name,vec2(120,70))
+    #EGP:egpText(58,"Faction: "+O:getFaction(),vec2(120,100))
+    EGP:egpText(59,"Ship Captain: "+O:name(),vec2(120,130))
+    EGP:egpText(84,"Ship Type: "+Core["Type",string],vec2(120,160))
+    
+    EGP:egpLine(60,vec2(120,180),vec2(495,180))
+    
+    EGP:egpBox(61,vec2(170,240),vec2(80,50))
+    EGP:egpColor(61,vec(0,180,255))
+    EGP:egpBoxOutline(62,vec2(170,240),vec2(80,50))
+    EGP:egpText(63,"Shields",vec2(170,230))
+    EGP:egpAlign(63,1)
+    
+    EGP:egpBox(64,vec2(170,320),vec2(80,50))
+    EGP:egpColor(64,vec(0,180,255))
+    EGP:egpBoxOutline(100,vec2(170,320),vec2(80,50))
+    EGP:egpText(101,"Cloak",vec2(170,310))
+    EGP:egpAlign(101,1)
+    
+    EGP:egpBox(67,vec2(170,400),vec2(80,50))
+    EGP:egpColor(67,vec(0,180,255))
+    EGP:egpBoxOutline(68,vec2(170,400),vec2(80,50))
+    EGP:egpText(69,"Life Support",vec2(170,390))
+    EGP:egpAlign(69,1)
+    EGP:egpSize(69,13)
+    
+    EGP:egpBoxOutline(70,vec2(360,320),vec2(240,210))
+    EGP:egpLine(71,vec2(240,260),vec2(480,260))
+    EGP:egpText(72,"All systems are good",vec2(360,230))
+    EGP:egpColor(72,vec(0,255,0))
+    EGP:egpAlign(72,1)
+    
+    EGP:egpBox(73,vec2(300,380),vec2(80,50))
+    EGP:egpColor(73,vec(0,180,255))
+    EGP:egpBoxOutline(74,vec2(300,380),vec2(80,50))
+    EGP:egpText(75,"Evacuate",vec2(300,370))
+    EGP:egpAlign(75,1)
+    
+    EGP:egpBox(76,vec2(420,380),vec2(80,50))
+    EGP:egpColor(76,vec(0,180,255))
+    EGP:egpBoxOutline(77,vec2(420,380),vec2(80,50))
+    EGP:egpText(78,"Selfdestruct",vec2(420,370))
+    EGP:egpAlign(78,1)
+    EGP:egpSize(78,15)
+    
+    EGP:egpLine(79,vec2(130,460),vec2(480,460))
+    EGP:egpSize(79,15)
+    EGP:egpColor(79,vec(100,100,100))
+    EGP:egpLine(80,vec2(130,460),vec2(130+Computer["Aux Power",number]*3.5,460))
+    EGP:egpSize(80,15)
+    EGP:egpColor(80,vec(0,Computer["Aux Power",number]*1.8,Computer["Aux Power",number]*2.55))
+    EGP:egpText(81,"Auxiliary Power",vec2(300,450))
+    EGP:egpAlign(81,1)
+    
+    EGP:egpText(82,"",vec2(360,280))
+    EGP:egpAlign(82,1)
+    EGP:egpText(83,"",vec2(360,320))
+    EGP:egpAlign(83,1)
+    
+    EGP:egpCircle(85,vec2(420,100),vec2(60,60))
+    if(Core["Type",string] == "Standart"){
+    EGP:egpColor(85,vec(200))
+    }
+    elseif(Core["Type",string] == "Tactical"){
+    EGP:egpColor(85,vec(255,0,0))
+    }
+    elseif(Core["Type",string] == "Science"){
+    EGP:egpColor(85,vec(0,0,255))
+    }
+    elseif(Core["Type",string] == "Engineering"){
+    EGP:egpColor(85,vec(255,255,0))
+    }
+    EGP:egpCircle(86,vec2(420,100),vec2(55,55))
+    EGP:egpColor(86,vec(120,120,120))
+    EGP:egpTriangle(87,vec2(420,40),vec2(380,130),vec2(460,130))
+    EGP:egpColor(87,vec(255,200,0))
+    EGP:egpTriangle(88,vec2(420,110),vec2(380,130),vec2(460,130))
+    EGP:egpColor(88,vec(120,120,120))
+    EGP:egpRoundedBox(89,vec2(420,85),vec2(140,20))
+    EGP:egpColor(89,vec(255,220,0))
+    EGP:egpRoundedBox(90,vec2(420,150),vec2(120,20))
+    EGP:egpColor(90,vec(255,220,0))
+    EGP:egpText(91,Name,vec2(420,75))
+    EGP:egpAlign(91,1)
+    EGP:egpColor(91,vec(0))
+    EGP:egpText(92,Core["Type",string]+"-Vessel",vec2(420,143))
+    EGP:egpAlign(92,1)
+    EGP:egpColor(92,vec(0))
+    EGP:egpSize(92,15)
+    }
+    elseif(EGP:button(Cursor,44)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        timer("tactical",100)
+        stoptimer("status")
+        stoptimer("engineering")
+        stoptimer("sensoren")
+        stoptimer("warpmain")
+        stoptimer("warpcoordinates")
+        stoptimer("warplocations")
+        EGP:egpColor(44,vec(0,100,230))
+        EGP:egpColor(41,vec(0,200,230))
+        EGP:egpColor(47,vec(0,200,230))
+        EGP:egpColor(50,vec(0,200,230))
+        EGP:egpColor(53,vec(0,200,230))
+         for(F=56,500){
+            EGP:egpRemove(F)
+        }
+	 EGP:egpText(56,"Tactical",vec2(140,15))
+    EGP:egpSize(56,40)
+    
+    EGP:egpBox(57,vec2(400,180),vec2(170,170))
+    EGP:egpColor(57,vec(128))
+    
+    EGP:egpBox(58,vec2(400,380),vec2(170,170))
+    EGP:egpColor(58,vec(128))
+    
+    EGP:egpLine(59,vec2(120,280),vec2(495,280))
+    
+    EGP:egpText(60,"No Target",vec2(400,60))
+    EGP:egpAlign(60,1)
+    EGP:egpSize(60,30)
+
+    EGP:egpText(61,"Target Object:",vec2(120,120))
+    EGP:egpText(62,"TargetObj",vec2(140,140))
+    EGP:egpSize(62,15)
+    
+    EGP:egpText(63,"Target Name:",vec2(120,170))
+    EGP:egpText(64,"TargetName",vec2(140,190))
+    EGP:egpSize(64,15)
+    
+    EGP:egpText(65,"Target Distance:",vec2(120,220))
+    EGP:egpText(66,"TargetDist",vec2(140,240))
+    EGP:egpSize(66,15)
+    
+    EGP:egpBox(67,vec2(150,320),vec2(50,50))
+    EGP:egpColor(67,vec(127,255,0))
+    EGP:egpBox(68,vec2(150,390),vec2(50,50))
+    EGP:egpColor(68,vec(255,255,0))
+    EGP:egpBox(69,vec2(150,460),vec2(50,50))
+    EGP:egpColor(69,vec(255,0,0))
+    
+    EGP:egpText(70,"Strength",vec2(210,300))
+    EGP:egpText(71,""+Strenght,vec2(240,330))
+    EGP:egpBox(72,vec2(210,350),vec2(40,50))
+    EGP:egpColor(72,vec(0,62,155))
+    EGP:egpBox(73,vec2(280,350),vec2(40,50))
+    EGP:egpColor(73,vec(0,62,155))    
+    EGP:egpText(74,"-",vec2(205,345))    
+    EGP:egpText(75,"+",vec2(275,345))    
+    
+    EGP:egpText(76,"Fire Rate",vec2(210,400))
+    EGP:egpText(77,""+FireRate,vec2(240,430))
+    EGP:egpBox(78,vec2(210,450),vec2(40,50))
+    EGP:egpColor(78,vec(0,62,155))
+    EGP:egpBox(79,vec2(280,450),vec2(40,50))
+    EGP:egpColor(79,vec(0,62,155))    
+    EGP:egpText(80,"-",vec2(205,445))    
+    EGP:egpText(81,"+",vec2(275,445))    
+        ###Enemy
+    EGP:egpLine(82,vec2(340,255),vec2(340,110))
+    EGP:egpSize(82,30)
+    EGP:egpColor(82,vec(0))
+    EGP:egpLine(83,vec2(340,255),vec2(340,110))
+    EGP:egpSize(83,30)
+    
+    EGP:egpLine(84,vec2(400,255),vec2(400,110))
+    EGP:egpSize(84,30)
+    EGP:egpColor(84,vec(0))
+    EGP:egpLine(85,vec2(400,255),vec2(400,110))
+    EGP:egpSize(85,30)
+    
+    EGP:egpLine(86,vec2(460,255),vec2(460,110))
+    EGP:egpSize(86,30)
+    EGP:egpColor(86,vec(0))
+    EGP:egpLine(87,vec2(460,255),vec2(460,110))
+    EGP:egpSize(87,30)
+    ####Own
+    EGP:egpLine(88,vec2(340,455),vec2(340,310))
+    EGP:egpSize(88,30)
+    EGP:egpColor(88,vec(0))
+    EGP:egpLine(89,vec2(340,455),vec2(340,454-Core["Hull",number]/Core["Max Hull",number]*100*1.45))
+    EGP:egpSize(89,30)
+    
+    EGP:egpLine(90,vec2(400,455),vec2(400,310))
+    EGP:egpSize(90,30)
+    EGP:egpColor(90,vec(0))
+    EGP:egpLine(91,vec2(400,455),vec2(400,454-Core["Plating",number]*1.45))
+    EGP:egpSize(91,30)
+  
+    EGP:egpLine(92,vec2(460,455),vec2(460,310))
+    EGP:egpSize(92,30)
+    EGP:egpColor(92,vec(0))
+    EGP:egpLine(93,vec2(460,455),vec2(460,454-Core["Shield",number]/Core["Max Shield",number]*100*1.45))
+    EGP:egpSize(93,30)
+    
+    EGP:egpText(94,"Hull",vec2(310,180))
+    EGP:egpAlign(94,1)
+    EGP:egpAngle(94,90)
+    
+    EGP:egpText(95,"Plating",vec2(365,180))
+    EGP:egpAlign(95,1)
+    EGP:egpAngle(95,90)
+    
+    EGP:egpText(96,"Shield",vec2(425,180))
+    EGP:egpAlign(96,1)
+    EGP:egpAngle(96,90)
+    
+    EGP:egpText(97,"Hull",vec2(310,380))
+    EGP:egpAlign(97,1)
+    EGP:egpAngle(97,90)
+    
+    EGP:egpText(98,"Plating",vec2(365,380))
+    EGP:egpAlign(98,1)
+    EGP:egpAngle(98,90)
+    
+    EGP:egpText(99,"Shield",vec2(425,380))
+    EGP:egpAlign(99,1)
+    EGP:egpAngle(99,90)
+    }
+    elseif(EGP:button(Cursor,47)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        timer("engineering",100)
+        stoptimer("tactical")
+        stoptimer("status")
+        stoptimer("sensoren")
+        stoptimer("warpmain")
+        stoptimer("warpcoordinates")
+        stoptimer("warplocations")
+        EGP:egpColor(47,vec(0,100,230))
+        EGP:egpColor(44,vec(0,200,230))
+        EGP:egpColor(41,vec(0,200,230))
+        EGP:egpColor(50,vec(0,200,230))
+        EGP:egpColor(53,vec(0,200,230))
+         for(F=56,500){
+            EGP:egpRemove(F)
+        }
+        EGP:egpText(56,"Engineering",vec2(140,15))
+    EGP:egpSize(56,40)
+    
+    EGP:egpBoxOutline(57,vec2(300,256),vec2(340,300))
+    EGP:egpLine(58,vec2(300,116),vec2(300,405))
+    EGP:egpLine(59,vec2(215,116),vec2(215,405))
+    EGP:egpLine(60,vec2(385,116),vec2(385,405))
+    
+    EGP:egpLine(61,vec2(173,370),vec2(173,116))
+    EGP:egpSize(61,50)
+    EGP:egpColor(61,vec(100))
+    EGP:egpLine(62,vec2(173,370),vec2(173,116))
+    EGP:egpSize(62,50)
+    EGP:egpColor(62,vec(255,192,0))
+    
+    EGP:egpLine(63,vec2(257,370),vec2(257,116))
+    EGP:egpSize(63,50)
+    EGP:egpColor(63,vec(100))
+    EGP:egpLine(64,vec2(257,370),vec2(257,116))
+    EGP:egpSize(64,50)
+    EGP:egpColor(64,vec(0,0,255))
+    
+    EGP:egpLine(65,vec2(343,370),vec2(343,116))
+    EGP:egpSize(65,50)
+    EGP:egpColor(65,vec(100))
+    EGP:egpLine(66,vec2(343,370),vec2(343,116))
+    EGP:egpSize(66,50)
+    EGP:egpColor(66,vec(0,200,200))
+    
+    EGP:egpLine(67,vec2(427,370),vec2(427,116))
+    EGP:egpSize(67,50)
+    EGP:egpColor(67,vec(100))
+    EGP:egpLine(68,vec2(427,370),vec2(427,116))
+    EGP:egpSize(68,50)
+    EGP:egpColor(68,vec(200,200,200))
+    
+    EGP:egpBox(69,vec2(173,450),vec2(80,50))
+    EGP:egpColor(69,vec(0,180,255))
+    EGP:egpBoxOutline(70,vec2(173,450),vec2(80,50))
+    EGP:egpText(71,"Energy",vec2(173,440))
+    EGP:egpAlign(71,1)
+    
+    EGP:egpBox(72,vec2(257,450),vec2(80,50))
+    EGP:egpColor(72,vec(0,180,255))
+    EGP:egpBoxOutline(73,vec2(257,450),vec2(80,50))
+    EGP:egpText(74,"Water",vec2(257,440))
+    EGP:egpAlign(74,1)
+    
+    EGP:egpBox(75,vec2(385,450),vec2(170,50))
+    EGP:egpColor(75,vec(0,180,255))
+    EGP:egpBoxOutline(76,vec2(385,450),vec2(170,50))
+    EGP:egpText(77,"Refinement",vec2(385,440))
+    EGP:egpAlign(77,1)
+    
+    EGP:egpLine(78,vec2(130,370),vec2(470,370))
+    EGP:egpText(79,"Energy",vec2(173,380))
+    EGP:egpAlign(79,1)
+    EGP:egpText(80,"Water",vec2(257,380))
+    EGP:egpAlign(80,1)
+    EGP:egpText(81,"Nitrogen",vec2(343,380))
+    EGP:egpAlign(81,1)
+    EGP:egpText(82,"Oxygen",vec2(427,380))
+    EGP:egpAlign(82,1)
+    }
+    elseif(EGP:button(Cursor,50)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        timer("sensoren",100)
+        stoptimer("tactical")
+        stoptimer("engineering")
+        stoptimer("status")
+        stoptimer("warpmain")
+        stoptimer("warpcoordinates")
+        stoptimer("warplocations")
+        EGP:egpColor(50,vec(0,100,230))
+        EGP:egpColor(44,vec(0,200,230))
+        EGP:egpColor(47,vec(0,200,230))
+        EGP:egpColor(41,vec(0,200,230))
+        EGP:egpColor(53,vec(0,200,230))
+         for(F=56,500){
+            EGP:egpRemove(F)
+        }
+   EGP:egpText(56,"Sensor",vec2(140,15))
+    EGP:egpSize(56,40)
+    
+    EGP:egpCircle(57,vec2(270,260),vec2(150,200))
+    EGP:egpColor(57,vec(100))
+    EGP:egpCircleOutline(58,vec2(270,260),vec2(150,200))
+    EGP:egpColor(58,vec(0,180,255))
+    EGP:egpCircleOutline(59,vec2(270,260),vec2(100,150))
+    EGP:egpColor(59,vec(200))
+    EGP:egpCircleOutline(60,vec2(270,260),vec2(50,100))
+    EGP:egpColor(60,vec(200))
+    EGP:egpLine(61,vec2(120,256),vec2(420,260))
+    EGP:egpColor(61,vec(200))
+    EGP:egpLine(62,vec2(270,60),vec2(270,460))
+    EGP:egpColor(62,vec(200))
+
+    EGP:egpBoxOutline(63,vec2(460,260),vec2(60,380))
+    
+    EGP:egpLine(65,vec2(430,Zoom/0.2),vec2(490,Zoom/0.2))
+    EGP:egpColor(65,vec(0,180,255))
+    EGP:egpSize(65,5)
+    
+    EGP:egpText(66,"+",vec2(400,90))
+    EGP:egpSize(66,40)
+    EGP:egpText(67,"-",vec2(400,380))    
+    EGP:egpSize(67,50)
+    
+
+    }
+    elseif(EGP:button(Cursor,53)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        timer("warpmain",100)
+        stoptimer("tactical")
+        stoptimer("engineering")
+        stoptimer("sensoren")
+        stoptimer("status")
+        EGP:egpColor(53,vec(0,100,230))
+        EGP:egpColor(44,vec(0,200,230))
+        EGP:egpColor(47,vec(0,200,230))
+        EGP:egpColor(50,vec(0,200,230))
+        EGP:egpColor(41,vec(0,200,230))
+        
+    
+         for(F=56,500){
+            EGP:egpRemove(F)
+        }
+    EGP:egpText(56,"Warp Control",vec2(140,15))
+    EGP:egpSize(56,40)
+    
+    EGP:egpBox(57,vec2(300,100),vec2(370,60))
+    EGP:egpColor(57,vec(100))
+    
+    EGP:egpBox(58,vec2(210,100),vec2(160,40))
+    EGP:egpColor(58,vec(0,200,255))
+    EGP:egpBoxOutline(59,vec2(210,100),vec2(160,40))
+    EGP:egpBox(60,vec2(390,100),vec2(160,40))
+    EGP:egpColor(60,vec(0,200,255))
+    EGP:egpBoxOutline(61,vec2(390,100),vec2(160,40))
+    
+    EGP:egpText(62,"Locations",vec2(210,90))
+    EGP:egpAlign(62,1)
+    EGP:egpText(63,"Coordinates",vec2(390,90))
+    EGP:egpAlign(63,1)
+    
+    EGP:egpLine(64,vec2(120,430),vec2(490,430))
+    
+    EGP:egpText(65,"Current Position: X() Y() Z()",vec2(120,440))
+    EGP:egpText(66,"Destination:          X() Y() Z()",vec2(120,465))
+    
+    EGP:egpBox(67,vec2(305,410),vec2(360,30))
+    EGP:egpColor(67,vec(0,200,100))
+    EGP:egpBoxOutline(68,vec2(305,410),vec2(360,30))
+    EGP:egpText(69,"E  N  G  A  G  E",vec2(305,400))
+    EGP:egpAlign(69,1)
+    EGP:egpLine(70,vec2(120,390),vec2(490,390))
+    
+    
+    EGP:egpLine(71,vec2(240,150),vec2(240,350))
+    EGP:egpLine(72,vec2(370,150),vec2(370,350))
+    
+    EGP:egpBox(73,vec2(175,180),vec2(90,40))
+    EGP:egpColor(73,vec(0,200,255))
+    EGP:egpBoxOutline(74,vec2(175,180),vec2(90,40))
+    EGP:egpText(75,"Pegasus",vec2(175,170))
+    EGP:egpAlign(75,1)
+    
+    EGP:egpBox(76,vec2(175,250),vec2(90,40))
+    EGP:egpColor(76,vec(0,200,255))
+    EGP:egpBoxOutline(77,vec2(175,250),vec2(90,40))
+    EGP:egpText(78,"Shakuras",vec2(175,240))
+    EGP:egpAlign(78,1)
+
+    EGP:egpBox(79,vec2(175,320),vec2(90,40))
+    EGP:egpColor(79,vec(0,200,255))
+    EGP:egpBoxOutline(80,vec2(175,320),vec2(90,40))
+    EGP:egpText(81,"Station",vec2(175,310))
+    EGP:egpAlign(81,1)
+    
+    EGP:egpBox(82,vec2(305,180),vec2(90,40))
+    EGP:egpColor(82,vec(0,200,255))
+    EGP:egpBoxOutline(83,vec2(305,180),vec2(90,40))
+    EGP:egpText(84,"Milkyway",vec2(305,170))
+    EGP:egpAlign(84,1)
+    
+    EGP:egpBox(85,vec2(305,250),vec2(90,40))
+    EGP:egpColor(85,vec(0,200,255))
+    EGP:egpBoxOutline(86,vec2(305,250),vec2(90,40))
+    EGP:egpText(87,"Earth",vec2(305,240))
+    EGP:egpAlign(87,1)
+
+    EGP:egpBox(88,vec2(305,320),vec2(90,40))
+    EGP:egpColor(88,vec(0,200,255))
+    EGP:egpBoxOutline(89,vec2(305,320),vec2(90,40))
+    EGP:egpText(90,"Moon",vec2(305,310))
+    EGP:egpAlign(90,1)
+    
+    EGP:egpBox(91,vec2(430,180),vec2(90,40))
+    EGP:egpColor(91,vec(0,200,255))
+    EGP:egpBoxOutline(92,vec2(430,180),vec2(90,40))
+    EGP:egpText(93,"Universe",vec2(430,170))
+    EGP:egpAlign(93,1)
+    
+    EGP:egpBox(94,vec2(430,230),vec2(90,40))
+    EGP:egpColor(94,vec(0,200,255))
+    EGP:egpBoxOutline(95,vec2(430,230),vec2(90,40))
+    EGP:egpText(96,"Hiigara",vec2(430,220))
+    EGP:egpAlign(96,1)
+
+    EGP:egpBox(97,vec2(430,280),vec2(90,40))
+    EGP:egpColor(97,vec(0,200,255))
+    EGP:egpBoxOutline(98,vec2(430,280),vec2(90,40))
+    EGP:egpText(99,"Desert",vec2(430,270))
+    EGP:egpAlign(99,1)
+    
+    EGP:egpBox(100,vec2(430,330),vec2(90,40))
+    EGP:egpColor(100,vec(0,200,255))
+    EGP:egpBoxOutline(101,vec2(430,330),vec2(90,40))
+    EGP:egpText(102,"Lava",vec2(430,320))
+    EGP:egpAlign(102,1)
+    
+    timer("warplocations",100)
+     EGP:egpColor(58,vec(0,100,255))
+    
+    }
+}
+    
+timer("egp",200)
+}
+if(clk("LockAI")){
+     
+    if(LockCol >= 1 & LockCol < 255){
+        LockCol = LockCol +10
+    }
+    elseif(LockCol >=255){
+        LockCol = 1
+    }
+
+    EGP:egpText(58,"AI Locked",vec2(310,206))
+    EGP:egpAlign(58,1)
+    EGP:egpSize(58,90)
+    EGP:egpColor(58,vec(LockCol,0,0))
+    EGP:egpText(901,"Made by SuperPlayer",vec2(5,500))
+    EGP:egpSize(901,12)
+User = EGP["User",entity]
+#Get the position of their cursor on the screen
+Cursor = EGP:egpCursor(User)
+#Get whether the person is pressing use
+Use = User:keyUse()
+#If I press use on the screen...
+if(changed(Use) & Use){
+    if(EGP:button(Cursor,1)){
+        warn("All function have been disabled. You need to restore them before using the AI.")
+}
+}
+    
+timer("LockAI",200)    
+}
+if(clk("status")){
+    
+#[
+    EGP:egpBoxOutline(100,vec2(170,320),vec2(80,50))
+    EGP:egpText(101,"Cloak",vec2(170,310))
+    EGP:egpAlign(101,1)
+]#
+        
+    EGP:egpLine(80,vec2(130,460),vec2(130+Computer["Aux Power",number]*3.5,460))
+    EGP:egpColor(80,vec(0,Computer["Aux Power",number]*1.8,Computer["Aux Power",number]*2.55))
+    
+    if(Core["Hull",number]/Core["Max Hull",number]*100 > 60){
+        EGP:egpSetText(72,"All systems are good")
+        EGP:egpColor(72,vec(0,255,0))
+    }
+    elseif(Core["Hull",number]/Core["Max Hull",number]*100 < 60 & Core["Hull",number]/Core["Max Hull",number]*100 > 20){
+        EGP:egpSetText(72,"Systems are damaged")
+        EGP:egpColor(72,vec(255,255,0))
+    }
+    elseif(Core["Hull",number]/Core["Max Hull",number]*100 < 20){
+        EGP:egpSetText(72,"Systems are heavily damaged")
+        EGP:egpColor(72,vec(255,0,0))
+    }
+    
+    if(Shield["Active",number] == 1){
+        EGP:egpColor(61,vec(0,61,255))
+    }
+    else{EGP:egpColor(61,vec(0,180,255))}
+    
+    if(Cloak["Active",number] == 1){
+        EGP:egpColor(64,vec(0,61,255))
+    }
+    else{EGP:egpColor(64,vec(0,180,255))}
+    
+    if(LifeSupport["Active",number] == 1){
+        EGP:egpColor(67,vec(0,61,255))
+    }
+    else{EGP:egpColor(67,vec(0,180,255))}
+    
+User = EGP["User",entity]
+#Get the position of their cursor on the screen
+Cursor = EGP:egpCursor(User)
+#Get whether the person is pressing use
+Use = User:keyUse()
+#If I press use on the screen...
+if(changed(Use) & Use){
+    if(EGP:button(Cursor,61)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(Shield){
+        if(Shield["Active",number] == 1){
+            Shield["Activate",number] = 0
+        }
+        else{
+            Shield["Activate",number] = 1
+    }
+}
+    else{warn("No Shield connected")}
+    }
+    elseif(EGP:button(Cursor,64)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(Cloak){
+        if(Cloak["Active",number] == 1){
+            Cloak["Activate",number] = 0
+        }
+        else{
+            Cloak["Activate",number] = 1
+        }
+    }   
+    else{warn("No Cloak connected")}
+}
+    elseif(EGP:button(Cursor,67)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(LifeSupport){
+        if(LifeSupport["Active",number] == 1){
+            LifeSupport["Activate",number] = 0
+        }
+        else{
+            LifeSupport["Activate",number] = 1
+        }
+        }
+        else{warn("No Life Support connected!")}
+        }   
+    elseif(EGP:button(Cursor,73)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(Evacuate == 1){
+            Evacuate = 0
+        EGP:egpSetText(83,"")
+        EGP:egpColor(73,vec(0,180,255))
+        foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
+                    SoundEm["Play",number] = 0
+                    SoundEm["SampleName",string] = ""
+                }
+                Color = vec(30)
+                foreach(DR, Door:wirelink = Doors){
+                Door["Open_1",number]=0
+                if(Door["Opened",number]==1)
+                {
+                    Door["Toggle",number]=1
+                    timer("SG-Door",500)
+                }
+            }
+        stoptimer("evac")
+        
+    }
+    else{
+        Evacuate = 1
+        EGP:egpSetText(83,"Evacuate the Ship!")
+        EGP:egpColor(83,vec(255,0,0))
+        EGP:egpColor(73,vec(255,0,0))
+        foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
+                    SoundEm["Play",number] = 1
+                    SoundEm["SampleName",string] = "st/misc/abandon_ship.wav"
+                }
+            Color = vec(255,0,0)
+            foreach(DR, Door:wirelink = Doors){
+            Door["Lock_1",number]=0
+            Door["Open_1",number]=1
+        if(Door["Opened",number]==0)
+        {
+            Door["Lockdown",number]=0
+            Door["Toggle",number]=1
+            timer("SG-Door",500)
+        }
+    }
+        timer("evac",200)
+        
+    }
+}   
+    elseif(EGP:button(Cursor,76)){
+        User:soundPlay(999,3,"console/beep04.wav")
+    if(SelfDestruct == 1){
+            SelfDestruct = 0
+        EGP:egpSetText(82,"")
+        EGP:egpColor(76,vec(0,180,255))
+        stoptimer("sd")
+        SelfDestructTime = 25
+        foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
+                    SoundEm["Play",number] = 0
+                    SoundEm["SampleName",string] = ""
+                }
+                Color = vec(30)
+        warn("Selfdestruct aborted!")
+        
+    }
+    else{
+        SelfDestruct = 1
+        EGP:egpSetText(82,"Selfdestruct activated!")
+        EGP:egpColor(82,vec(255,0,0))
+        EGP:egpColor(76,vec(255,0,0))
+        SelfDestructTime = 60
+        foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
+                    SoundEm["Play",number] = 1
+                    SoundEm["SampleName",string] = "misc/bweeep.wav"
+                }
+                Color = vec(255,0,0)
+        timer("sd",500)
+        
+    }
+    } 
+}
+    
+timer("status",200)
+}
+if(clk("tactical")){
+
+    EGP:egpSetText(71,""+Strenght)
+    EGP:egpSetText(77,""+FireRate)
+    EGP:egpLine(89,vec2(340,455),vec2(340,454-Core["Hull",number]/Core["Max Hull",number]*100))
+    EGP:egpLine(91,vec2(400,455),vec2(400,454-Core["Armor",number]/Core["Max Armor",number]*100))
+	   EGP:egpLine(93,vec2(460,455),vec2(460,454-Shield["Strenght",number]))
+	
+    if(Target:isValid()){
+        if(Target:type() == "ship_core_asgard"){
+            Hull = Sensor["% Hull",number]
+            Plating = Sensor["% Armor",number]
+            Shields = Sensor["% Shield",number]
+        }
+        elseif(Target:type() == "st_shuttle_type11"){
+            Hull = Sensor["Health",number]/Sensor["Max Health",number]*100*1.45
+            Shields = Sensor["Shields",number]*1.45
+            Plating = Sensor["Armour",number]/200000*100*1.45
+        }
+        else{
+            Hull = 1
+            Plating = 1
+            Shields = 1
+        }
+        EGP:egpSetText(60,"Target Aquired")
+        EGP:egpSetText(62,Target:type())
+        if(Target:isPlayer()){
+            EGP:egpSetText(64,Target:name())
+        }
+        else{
+        EGP:egpSetText(64,Target:owner():name())
+        }
+        EGP:egpSetText(66,toString(round(E:pos():distance(Target:pos()))))
+        
+        EGP:egpLine(83,vec2(340,255),vec2(340,255-Hull))
+        EGP:egpLine(85,vec2(400,255),vec2(400,255-Plating))
+        EGP:egpLine(87,vec2(460,255),vec2(460,255-Shields))
+    }
+    else{
+        EGP:egpSetText(60,"No Target")
+        EGP:egpSetText(62,"")
+        EGP:egpSetText(64,"")
+        EGP:egpSetText(66,"")
+        EGP:egpLine(83,vec2(340,255),vec2(340,256))
+        EGP:egpLine(85,vec2(400,255),vec2(400,256))
+        EGP:egpLine(87,vec2(460,255),vec2(460,256))
+    }
+User = EGP["User",entity]
+#Get the position of their cursor on the screen
+Cursor = EGP:egpCursor(User)
+#Get whether the person is pressing use
+Use = User:keyUse()
+#If I press use on the screen...
+if(changed(Use) & Use){
+    if(EGP:button(Cursor,67)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        for(F=2,40){
+            EGP:egpColor(F,vec(0,100,230))
+        }
+        foreach(DR, Door:wirelink = Doors){
+        Door["Lockdown",number]=0
+        Door["Lock_1",number]=0
+    }
+        foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
+                    SoundEm["Play",number] = 0
+                    SoundEm["SampleName",string] = ""
+                }
+                Color = vec(145)
+                Shield["Active",number] == 0
+    }
+    elseif(EGP:button(Cursor,68)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        for(F=2,40){
+            EGP:egpColor(F,vec(255,255,0))
+        }
+        foreach(DR, Door:wirelink = Doors){
+        Door["Lockdown",number]=0
+        Door["Lock_1",number]=0
+    }
+        foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
+                    SoundEm["Play",number] = 1
+                    SoundEm["SampleName",string] = "st/shuttlecraft/yellowalert.wav"
+                }
+                Color = vec(255,255,0)
+    }
+    elseif(EGP:button(Cursor,69)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        for(F=2,40){
+            EGP:egpColor(F,vec(255,0,0))
+        }
+        foreach(DR, Door:wirelink = Doors){
+        Door["Lockdown",number]=1
+        Door["Lock_1",number]=1
+    }
+        foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
+                    SoundEm["Play",number] = 1
+                    SoundEm["SampleName",string] = "st/misc/defiant_redalert.wav"
+                }
+                Color = vec(255,0,0)
+                Shield["Active",number] == 1
+    }
+    elseif(EGP:button(Cursor,72)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(Strenght > 1){
+            Strenght--
+            EGP:egpSetText(71,""+Strenght)
+            foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
+                    EWeapon["Strength",number] = Strenght
+                }
+        }
+    }
+    elseif(EGP:button(Cursor,73)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(Strenght < 10){
+            Strenght++
+            EGP:egpSetText(71,""+Strenght)
+            foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
+                    EWeapon["Strength",number] = Strenght
+                }
+        }
+    }
+    elseif(EGP:button(Cursor,78)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(FireRate > 1){
+            FireRate--
+            EGP:egpSetText(77,""+FireRate)
+            foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
+                    EWeapon["Fire Rate",number] = FireRate
+                }
+        }
+    }
+    elseif(EGP:button(Cursor,79)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(FireRate < 10){
+            FireRate++
+            EGP:egpSetText(77,""+FireRate)
+            foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
+                    EWeapon["Fire Rate",number] = FireRate
+                }
+        }
+    }
+}
+timer("tactical",200)
+}
+if(clk("engineering")){
+    
+    WaterCollector = WaterCore["Collector",entity]:wirelink()
+    
+    EGP:egpLine(62,vec2(173,370),vec2(173,369-Node["Energy",number]/Node["Max Energy",number]*100*2.54))
+    EGP:egpLine(64,vec2(257,370),vec2(257,369-Node["Water",number]/Node["Max Water",number]*100*2.54))
+    EGP:egpLine(66,vec2(343,370),vec2(343,369-Node["Nitrogen",number]/Node["Max Nitrogen",number]*100*2.54))
+    EGP:egpLine(68,vec2(427,370),vec2(427,369-Node["Oxygen",number]/Node["Max Oxygen",number]*100*2.54))
+    
+    if(EnergyCore["Active",number] == 1){
+        EGP:egpColor(69,vec(0,61,255))
+    }
+    else{EGP:egpColor(69,vec(0,180,255))}
+    
+    if(RefinementCore["Active",number] == 1){
+        EGP:egpColor(75,vec(0,61,255))
+    }
+    else{EGP:egpColor(75,vec(0,180,255))}
+    
+    if(WaterCollector){
+    if(WaterCollector["Active",number] == 1){
+        EGP:egpColor(72,vec(0,61,255))
+    }
+    else{EGP:egpColor(72,vec(0,180,255))}
+    }
+     else{EGP:egpColor(72,vec(0,180,255))}
+    
+    
+User = EGP["User",entity]
+#Get the position of their cursor on the screen
+Cursor = EGP:egpCursor(User)
+#Get whether the person is pressing use
+Use = User:keyUse()
+#If I press use on the screen...
+if(changed(Use) & Use){
+    if(EGP:button(Cursor,69)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(EnergyCore){
+        if(EnergyCore["Active",number] == 1){
+        EnergyCore["Activate",number] = 0
+    }
+    else{EnergyCore["Activate",number] = 1}
+    }
+    else{warn("No Energy Core connected!")}
+    }
+    elseif(EGP:button(Cursor,72)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(WaterCollector){
+            if(WaterCollector["Active",number] == 1){
+                WaterCollector["Activate",number] = 0
+            }
+            else{WaterCollector["Activate",number] = 1}
+        }
+        else{warn("No Water Collector connected!")}
+    }  
+    elseif(EGP:button(Cursor,75)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        if(RefinementCore){
+        if(RefinementCore["Active",number] == 1){
+        RefinementCore["Activate",number] = 0
+    }
+    else{RefinementCore["Activate",number] = 1}
+    }    
+    else{warn("No Refinement Core connected!")}
+    }
+    
+}
+timer("engineering",200)
+}
+if(clk("sensoren")){
+findByClass("player")
+findSortByDistance(E:pos())
+Players = findToArray()
+for (X=1, Players:count()){
+    Player = Players[X,entity]
+    PID = Player:id()
+         
+        Vec = entity():toLocal(Player:pos())/Zoom
+        Vec2 = vec2(Vec:x()+270,Vec:y()+260)
+        
+        EGP:egpCircle(200+X,Vec2,vec2(3,3))
+        EGP:egpColor(200+X,teamColor(Player:team()))
+        
+        EGP:egpText(300+X,Player:name(),Vec2+vec2(0,-20))
+        EGP:egpSize(300+X,15)
+        EGP:egpAlign(300+X,1)
+        
+        if(Vec2:x() < 120 | Vec2:x() > 420 | Vec2:y() < 80 | Vec2:y() > 380){
+            EGP:egpRemove(200+X)
+            EGP:egpRemove(300+X)
+            }
+    
+}
+User = EGP["User",entity]
+#Get the position of their cursor on the screen
+Cursor = EGP:egpCursor(User)
+#Get whether the person is pressing use
+Use = User:keyUse()
+#If I press use on the screen...
+if(changed(Use) & Use){
+    if(EGP:button(Cursor,63)){
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpLine(65,vec2(430,Cursor:y()),vec2(490,Cursor:y()))
+        Zoom = round(Cursor:y()*0.2)
+    }
+    
+}
+timer("sensoren",400)
+}
+if(clk("warpmain")){
+    EGP:egpSetText(65,"Current Position: X("+round(E:pos():x())+") Y("+round(E:pos():y())+") Z("+round(E:pos():z())+")")
+    EGP:egpSetText(66,"Destination:          X("+round(WarpDest:x())+") Y("+round(WarpDest:y())+") Z("+round(WarpDest:z())+")")
+User = EGP["User",entity]
+#Get the position of their cursor on the screen
+Cursor = EGP:egpCursor(User)
+#Get whether the person is pressing use
+Use = User:keyUse()
+#If I press use on the screen...
+if(changed(Use) & Use){
+    
+    if(EGP:button(Cursor,58)){
+        for(F=71,500){
+            EGP:egpRemove(F)
+        }
+        timer("warplocations",100)
+        stoptimer("warpcoordinates")
+    EGP:egpColor(58,vec(0,100,255))
+    EGP:egpColor(60,vec(0,200,255))
+    User:soundPlay(999,3,"console/beep04.wav")
+    EGP:egpLine(71,vec2(240,150),vec2(240,350))
+    EGP:egpLine(72,vec2(370,150),vec2(370,350))
+    
+    EGP:egpBox(73,vec2(175,180),vec2(90,40))
+    EGP:egpColor(73,vec(0,200,255))
+    EGP:egpBoxOutline(74,vec2(175,180),vec2(90,40))
+    EGP:egpText(75,"Pegasus",vec2(175,170))
+    EGP:egpAlign(75,1)
+    
+    EGP:egpBox(76,vec2(175,250),vec2(90,40))
+    EGP:egpColor(76,vec(0,200,255))
+    EGP:egpBoxOutline(77,vec2(175,250),vec2(90,40))
+    EGP:egpText(78,"Shakuras",vec2(175,240))
+    EGP:egpAlign(78,1)
+
+    EGP:egpBox(79,vec2(175,320),vec2(90,40))
+    EGP:egpColor(79,vec(0,200,255))
+    EGP:egpBoxOutline(80,vec2(175,320),vec2(90,40))
+    EGP:egpText(81,"Station",vec2(175,310))
+    EGP:egpAlign(81,1)
+    
+    EGP:egpBox(82,vec2(305,180),vec2(90,40))
+    EGP:egpColor(82,vec(0,200,255))
+    EGP:egpBoxOutline(83,vec2(305,180),vec2(90,40))
+    EGP:egpText(84,"Milkyway",vec2(305,170))
+    EGP:egpAlign(84,1)
+    
+    EGP:egpBox(85,vec2(305,250),vec2(90,40))
+    EGP:egpColor(85,vec(0,200,255))
+    EGP:egpBoxOutline(86,vec2(305,250),vec2(90,40))
+    EGP:egpText(87,"Earth",vec2(305,240))
+    EGP:egpAlign(87,1)
+
+    EGP:egpBox(88,vec2(305,320),vec2(90,40))
+    EGP:egpColor(88,vec(0,200,255))
+    EGP:egpBoxOutline(89,vec2(305,320),vec2(90,40))
+    EGP:egpText(90,"Moon",vec2(305,310))
+    EGP:egpAlign(90,1)
+    
+    EGP:egpBox(91,vec2(430,180),vec2(90,40))
+    EGP:egpColor(91,vec(0,200,255))
+    EGP:egpBoxOutline(92,vec2(430,180),vec2(90,40))
+    EGP:egpText(93,"Universe",vec2(430,170))
+    EGP:egpAlign(93,1)
+    
+    EGP:egpBox(94,vec2(430,230),vec2(90,40))
+    EGP:egpColor(94,vec(0,200,255))
+    EGP:egpBoxOutline(95,vec2(430,230),vec2(90,40))
+    EGP:egpText(96,"Hiigara",vec2(430,220))
+    EGP:egpAlign(96,1)
+
+    EGP:egpBox(97,vec2(430,280),vec2(90,40))
+    EGP:egpColor(97,vec(0,200,255))
+    EGP:egpBoxOutline(98,vec2(430,280),vec2(90,40))
+    EGP:egpText(99,"Desert",vec2(430,270))
+    EGP:egpAlign(99,1)
+    
+    EGP:egpBox(100,vec2(430,330),vec2(90,40))
+    EGP:egpColor(100,vec(0,200,255))
+    EGP:egpBoxOutline(101,vec2(430,330),vec2(90,40))
+    EGP:egpText(102,"Lava",vec2(430,320))
+    EGP:egpAlign(102,1)
+    
+        
+        
+    }
+    elseif(EGP:button(Cursor,60)){
+        for(F=71,500){
+            EGP:egpRemove(F)
+        }
+        
+        timer("warpcoordinates",100)
+        stoptimer("warplocations")
+        
+        EGP:egpColor(58,vec(0,200,255))
+    EGP:egpColor(60,vec(0,100,255))
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpLine(71,vec2(120,210),vec2(490,210))
+    EGP:egpLine(72,vec2(120,300),vec2(490,300))
+    
+    EGP:egpText(73,"X: ",vec2(120,140))
+    EGP:egpBox(74,vec2(300,185),vec2(40,35))
+    EGP:egpColor(74,vec(0,150,255))
+    EGP:egpBoxOutline(75,vec2(300,185),vec2(40,35))
+    EGP:egpBox(76,vec2(160,185),vec2(60,35))
+    EGP:egpColor(76,vec(0,150,255))
+    EGP:egpBoxOutline(77,vec2(160,185),vec2(60,35))
+    EGP:egpBox(78,vec2(230,185),vec2(60,35))
+    EGP:egpColor(78,vec(0,150,255))
+    EGP:egpBoxOutline(79,vec2(230,185),vec2(60,35))
+    EGP:egpBox(80,vec2(370,185),vec2(60,35))
+    EGP:egpColor(80,vec(0,150,255))
+    EGP:egpBoxOutline(81,vec2(370,185),vec2(60,35))
+    EGP:egpBox(82,vec2(440,185),vec2(60,35))
+    EGP:egpColor(82,vec(0,150,255))
+    EGP:egpBoxOutline(83,vec2(440,185),vec2(60,35))
+    
+    EGP:egpText(84,"-1000",vec2(160,175))
+    EGP:egpAlign(84,1)
+    EGP:egpText(85,"-100",vec2(230,175))
+    EGP:egpAlign(85,1)
+    EGP:egpText(86,"R",vec2(300,175))
+    EGP:egpAlign(86,1)
+    EGP:egpText(87,"+100",vec2(370,175))
+    EGP:egpAlign(87,1)
+    EGP:egpText(88,"+1000",vec2(440,175))
+    EGP:egpAlign(88,1)
+    
+    
+    EGP:egpText(89,"Y: ",vec2(120,220))
+    EGP:egpBox(90,vec2(300,265),vec2(40,35))
+    EGP:egpColor(90,vec(0,150,255))
+    EGP:egpBoxOutline(91,vec2(300,265),vec2(40,35))
+    EGP:egpBox(92,vec2(160,265),vec2(60,35))
+    EGP:egpColor(92,vec(0,150,255))
+    EGP:egpBoxOutline(93,vec2(160,265),vec2(60,35))
+    EGP:egpBox(94,vec2(230,265),vec2(60,35))
+    EGP:egpColor(94,vec(0,150,255))
+    EGP:egpBoxOutline(95,vec2(230,265),vec2(60,35))
+    EGP:egpBox(96,vec2(370,265),vec2(60,35))
+    EGP:egpColor(96,vec(0,150,255))
+    EGP:egpBoxOutline(97,vec2(370,265),vec2(60,35))
+    EGP:egpBox(98,vec2(440,265),vec2(60,35))
+    EGP:egpColor(98,vec(0,150,255))
+    EGP:egpBoxOutline(99,vec2(440,265),vec2(60,35))
+    
+    EGP:egpText(100,"-1000",vec2(160,255))
+    EGP:egpAlign(100,1)
+    EGP:egpText(101,"-100",vec2(230,255))
+    EGP:egpAlign(101,1)
+    EGP:egpText(102,"R",vec2(300,255))
+    EGP:egpAlign(102,1)
+    EGP:egpText(103,"+100",vec2(370,255))
+    EGP:egpAlign(103,1)
+    EGP:egpText(104,"+1000",vec2(440,255))
+    EGP:egpAlign(104,1)
+    
+    
+    EGP:egpText(105,"Z: ",vec2(120,310))
+    EGP:egpBox(106,vec2(300,355),vec2(40,35))
+    EGP:egpColor(106,vec(0,150,255))
+    EGP:egpBoxOutline(107,vec2(300,355),vec2(40,35))
+    EGP:egpBox(108,vec2(160,355),vec2(60,35))
+    EGP:egpColor(108,vec(0,150,255))
+    EGP:egpBoxOutline(109,vec2(160,355),vec2(60,35))
+    EGP:egpBox(110,vec2(230,355),vec2(60,35))
+    EGP:egpColor(110,vec(0,150,255))
+    EGP:egpBoxOutline(111,vec2(230,355),vec2(60,35))
+    EGP:egpBox(112,vec2(370,355),vec2(60,35))
+    EGP:egpColor(112,vec(0,150,255))
+    EGP:egpBoxOutline(113,vec2(370,355),vec2(60,35))
+    EGP:egpBox(114,vec2(440,355),vec2(60,35))
+    EGP:egpColor(114,vec(0,150,255))
+    EGP:egpBoxOutline(115,vec2(440,355),vec2(60,35))
+    
+    EGP:egpText(116,"-1000",vec2(160,345))
+    EGP:egpAlign(116,1)
+    EGP:egpText(117,"-100",vec2(230,345))
+    EGP:egpAlign(117,1)
+    EGP:egpText(118,"R",vec2(300,345))
+    EGP:egpAlign(118,1)
+    EGP:egpText(119,"+100",vec2(370,345))
+    EGP:egpAlign(119,1)
+    EGP:egpText(120,"+1000",vec2(440,345))
+    EGP:egpAlign(120,1)
+    
+    }
+    elseif(EGP:button(Cursor,67)){
+        if(Engine){
+        if(WarpDest:isInWorld()){
+        User:soundPlay(999,3,"st/misc/engage.wav")
+        Engine["Destination",vector] = WarpDest
+        timer("warp",100)
+        say("Activating Engines...")
+        }
+        else{say("Warp Coordinates are not in known space")
+            User:soundPlay(999,3,"shuttlecraft/computer_deny.wav")}
+        }
+        else{warn("No Engine connected")
+            User:soundPlay(999,3,"shuttlecraft/computer_deny.wav")}
+        }
+    }
+timer("warpmain",300)
+}
+if(clk("warplocations")){
+User = EGP["User",entity]
+
+Cursor = EGP:egpCursor(User)
+
+Use = User:keyUse()
+
+if(changed(Use) & Use){
+    
+    if(EGP:button(Cursor,73)){
+        WarpDest = WLoc["pegasus",vector]
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpColor(73,vec(0,100,255))
+        EGP:egpColor(76,vec(0,200,255))
+        EGP:egpColor(79,vec(0,200,255))
+        EGP:egpColor(82,vec(0,200,255))
+        EGP:egpColor(85,vec(0,200,255))
+        EGP:egpColor(88,vec(0,200,255))
+        EGP:egpColor(91,vec(0,200,255))
+        EGP:egpColor(94,vec(0,200,255))
+        EGP:egpColor(97,vec(0,200,255))
+        EGP:egpColor(100,vec(0,200,255))
+    }
+    elseif(EGP:button(Cursor,76)){
+        WarpDest = WLoc["shakuras",vector]
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpColor(76,vec(0,100,255))
+        EGP:egpColor(73,vec(0,200,255))
+        EGP:egpColor(79,vec(0,200,255))
+        EGP:egpColor(82,vec(0,200,255))
+        EGP:egpColor(85,vec(0,200,255))
+        EGP:egpColor(88,vec(0,200,255))
+        EGP:egpColor(91,vec(0,200,255))
+        EGP:egpColor(94,vec(0,200,255))
+        EGP:egpColor(97,vec(0,200,255))
+        EGP:egpColor(100,vec(0,200,255))
+    }
+    elseif(EGP:button(Cursor,79)){
+        WarpDest = WLoc["station",vector]
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpColor(79,vec(0,100,255))
+        EGP:egpColor(76,vec(0,200,255))
+        EGP:egpColor(73,vec(0,200,255))
+        EGP:egpColor(82,vec(0,200,255))
+        EGP:egpColor(85,vec(0,200,255))
+        EGP:egpColor(88,vec(0,200,255))
+        EGP:egpColor(91,vec(0,200,255))
+        EGP:egpColor(94,vec(0,200,255))
+        EGP:egpColor(97,vec(0,200,255))
+        EGP:egpColor(100,vec(0,200,255))
+    }
+    elseif(EGP:button(Cursor,82)){
+        WarpDest = WLoc["milkyway",vector]
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpColor(82,vec(0,100,255))
+        EGP:egpColor(76,vec(0,200,255))
+        EGP:egpColor(79,vec(0,200,255))
+        EGP:egpColor(73,vec(0,200,255))
+        EGP:egpColor(85,vec(0,200,255))
+        EGP:egpColor(88,vec(0,200,255))
+        EGP:egpColor(91,vec(0,200,255))
+        EGP:egpColor(94,vec(0,200,255))
+        EGP:egpColor(97,vec(0,200,255))
+        EGP:egpColor(100,vec(0,200,255))
+    }
+    elseif(EGP:button(Cursor,85)){
+        WarpDest = WLoc["earth",vector]
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpColor(85,vec(0,100,255))
+        EGP:egpColor(76,vec(0,200,255))
+        EGP:egpColor(79,vec(0,200,255))
+        EGP:egpColor(82,vec(0,200,255))
+        EGP:egpColor(73,vec(0,200,255))
+        EGP:egpColor(88,vec(0,200,255))
+        EGP:egpColor(91,vec(0,200,255))
+        EGP:egpColor(94,vec(0,200,255))
+        EGP:egpColor(97,vec(0,200,255))
+        EGP:egpColor(100,vec(0,200,255))
+    }
+    elseif(EGP:button(Cursor,88)){
+        WarpDest = WLoc["moon",vector]
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpColor(88,vec(0,100,255))
+        EGP:egpColor(76,vec(0,200,255))
+        EGP:egpColor(79,vec(0,200,255))
+        EGP:egpColor(82,vec(0,200,255))
+        EGP:egpColor(85,vec(0,200,255))
+        EGP:egpColor(73,vec(0,200,255))
+        EGP:egpColor(91,vec(0,200,255))
+        EGP:egpColor(94,vec(0,200,255))
+        EGP:egpColor(97,vec(0,200,255))
+        EGP:egpColor(100,vec(0,200,255))
+    }
+    elseif(EGP:button(Cursor,91)){
+        WarpDest = WLoc["universe",vector]
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpColor(91,vec(0,100,255))
+        EGP:egpColor(76,vec(0,200,255))
+        EGP:egpColor(79,vec(0,200,255))
+        EGP:egpColor(82,vec(0,200,255))
+        EGP:egpColor(85,vec(0,200,255))
+        EGP:egpColor(88,vec(0,200,255))
+        EGP:egpColor(73,vec(0,200,255))
+        EGP:egpColor(94,vec(0,200,255))
+        EGP:egpColor(97,vec(0,200,255))
+        EGP:egpColor(100,vec(0,200,255))
+    }
+    elseif(EGP:button(Cursor,94)){
+        WarpDest = WLoc["hiigara",vector]
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpColor(94,vec(0,100,255))
+        EGP:egpColor(76,vec(0,200,255))
+        EGP:egpColor(79,vec(0,200,255))
+        EGP:egpColor(82,vec(0,200,255))
+        EGP:egpColor(85,vec(0,200,255))
+        EGP:egpColor(88,vec(0,200,255))
+        EGP:egpColor(91,vec(0,200,255))
+        EGP:egpColor(73,vec(0,200,255))
+        EGP:egpColor(97,vec(0,200,255))
+        EGP:egpColor(100,vec(0,200,255))
+    }
+    elseif(EGP:button(Cursor,97)){
+        WarpDest = WLoc["desert",vector]
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpColor(97,vec(0,100,255))
+        EGP:egpColor(76,vec(0,200,255))
+        EGP:egpColor(79,vec(0,200,255))
+        EGP:egpColor(82,vec(0,200,255))
+        EGP:egpColor(85,vec(0,200,255))
+        EGP:egpColor(88,vec(0,200,255))
+        EGP:egpColor(91,vec(0,200,255))
+        EGP:egpColor(94,vec(0,200,255))
+        EGP:egpColor(73,vec(0,200,255))
+        EGP:egpColor(100,vec(0,200,255))
+    }
+    elseif(EGP:button(Cursor,100)){
+        WarpDest = WLoc["lava",vector]
+        User:soundPlay(999,3,"console/beep04.wav")
+        EGP:egpColor(100,vec(0,100,255))
+        EGP:egpColor(76,vec(0,200,255))
+        EGP:egpColor(79,vec(0,200,255))
+        EGP:egpColor(82,vec(0,200,255))
+        EGP:egpColor(85,vec(0,200,255))
+        EGP:egpColor(88,vec(0,200,255))
+        EGP:egpColor(91,vec(0,200,255))
+        EGP:egpColor(94,vec(0,200,255))
+        EGP:egpColor(97,vec(0,200,255))
+        EGP:egpColor(73,vec(0,200,255))
+    }
+}
+    
+timer("warplocations",300)
+}
+if(clk("warpcoordinates")){
+    EGP:egpSetText(73,"X: "+round(WarpDest:x()))
+    EGP:egpSetText(89,"Y: "+round(WarpDest:y()))
+    EGP:egpSetText(105,"Z: "+round(WarpDest:z()))
+User = EGP["User",entity]
+
+Cursor = EGP:egpCursor(User)
+
+Use = User:keyUse()
+
+if(changed(Use) & Use){
+    #####    X    #########
+    if(EGP:button(Cursor,74)){  
+        WarpDest = vec(0,WarpDest:y(),WarpDest:z())
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,76)){
+        WarpDest = WarpDest - vec(1000,0,0)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,78)){  
+        WarpDest = WarpDest - vec(100,0,0)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,80)){  
+        WarpDest = WarpDest + vec(100,0,0)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,82)){  
+        WarpDest = WarpDest + vec(1000,0,0)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    ######    Y    ########
+    elseif(EGP:button(Cursor,90)){  
+        WarpDest = vec(WarpDest:x(),0,WarpDest:z())
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,92)){  
+        WarpDest = WarpDest - vec(0,1000,0)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,94)){  
+        WarpDest = WarpDest - vec(0,100,0)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,96)){  
+        WarpDest = WarpDest + vec(0,100,0)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,98)){  
+        WarpDest = WarpDest + vec(0,1000,0)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    ######     Z     ########
+    elseif(EGP:button(Cursor,106)){  
+        WarpDest = vec(WarpDest:x(),WarpDest:y(),0)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,108)){  
+        WarpDest = WarpDest - vec(0,0,1000)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,110)){  
+        WarpDest = WarpDest - vec(0,0,100)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,112)){  
+        WarpDest = WarpDest + vec(0,0,100)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    elseif(EGP:button(Cursor,114)){  
+        WarpDest = WarpDest + vec(0,0,1000)
+        User:soundPlay(999,3,"console/beep04.wav")
+    }
+    
+}
+    
+timer("warpcoordinates",300)
+}
+
+if(clk("sd")){
+    SelfDestructTime--
+    EGP:egpSetText(82,"Selfdestruct in "+SelfDestructTime+" seconds!")
+    if(SelfDestructTime == 50){
+        warn("Selfdestruct in 50 seconds")
+    }
+    elseif(SelfDestructTime == 40){
+        warn("Selfdestruct in 40 seconds")
+    }
+    elseif(SelfDestructTime == 20){
+        warn("Selfdestruct in 20 seconds")
+    }
+    elseif(SelfDestructTime == 10){
+        warn("Selfdestruct in 10 seconds")
+    }
+     elseif(SelfDestructTime == 5){
+        warn("Selfdestruct in 5 seconds")
+    }
+     elseif(SelfDestructTime == 4){
+        warn("Selfdestruct in 4 seconds")
+    }
+     elseif(SelfDestructTime == 3){
+        warn("Selfdestruct in 3 seconds")
+    }
+     elseif(SelfDestructTime == 2){
+        warn("Selfdestruct in 2 seconds")
+    }
+     elseif(SelfDestructTime == 1){
+        warn("Selfdestruct in 1 seconds")
+    }
+     elseif(SelfDestructTime == 0){
+        stoptimer("sd")
+        SelfDestructTime = 0
+        SelfDestruct = 0
+        SD["Destruct",number] = 1
+    }
+timer("sd",1000)
+}
+if(AIUseOk == 1){
+runOnChat(1)
+O = owner()
+CU = chatClk(O)
+if(CU){
+    LS = lastSaid():lower()
+    LSC = LS:explode(" ")
+    
+}
+    
+if (CU & LSC[1,string]=="ai" & LSC:count() == 1 ) {
+    hideChat(1)
+    say("Waiting for your orders,"+owner():name()+".")
+}
+elseif(CU & LSC[1,string]=="ai" & LSC:count() > 1){
+    hideChat(1)
+    Orders = LS
+    #####Ship Status########
+    if (CU & LSC[2,string]=="status") {
+        hideChat(1)
+        if(Shield["Active",number] == 1){SStatus = "Online"}
+        elseif(Shield["Active",number] == 0){SStatus = "Offline"}          
+			say("Core Status [Hull]: "+round(Core["Hull",number]/Core["Max Hull",number]*100))
+			say("Core Status [Plating]: "+round(Core["Armor",number]))
+			say("Shield Status: "+round(Shield["Shield",number]/Shield["Max Shield",number]*100)+"["+SStatus+"]")}
+		
+        elseif (CU & LS:find("shields up")) {
+        hideChat(1)
+		if(Shield){
+        if(Shield["Active",number] == 1){
+            owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")
+			say("Shields are already active!")
+        }
+        elseif(Shield["Active",number] == 0){
+            Shield["Activate",number] = 1
+            Core["Enable Plating",number] = 1
+            say("Activating Shields!")
+        }
+        }
+		else{warn("No Shield connected!")}
+		}
+        
+        elseif (CU & LS:find("shields down")) {
+        hideChat(1)
+		if(Shield){
+        if(Shield["Active",number] == 0){
+            owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")
+			say("Shields are already down!")
+        }
+        else{
+            Shield["Activate",number] = 0
+            Core["Enable Plating",number] = 0
+            Shield["Activate",number] = 0
+        say("Deactivating Shields!")}
+            }
+			else{warn("No Shield connected!")}
+            }
+            
+################SD-CHAT############
+elseif(CU&LSC[2,string] == "destruct")
+{
+    if(CU&LSC[3,string] == "abort")
+    {
+        SelfDestruct = 0
+        EGP:egpSetText(82,"")
+        EGP:egpColor(76,vec(0,180,255))
+        stoptimer("sd")
+        SelfDestructTime = 25
+        foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
+                    SoundEm["Play",number] = 0
+                    SoundEm["SampleName",string] = ""
+                }
+                Color = vec(30)
+        warn("Selfdestruct aborted!")
+    }
+    else{
+        SelfDestruct = 1
+        EGP:egpSetText(82,"Selfdestruct activated!")
+        EGP:egpColor(82,vec(255,0,0))
+        EGP:egpColor(76,vec(255,0,0))
+        if(CU & LSC[3,string] == ""){
+            SelfDestructTime = 60
+            warn("Self Destruct Enabled! Countdown set to: 60 seconds")
+        }else{
+            SelfDestructTime = LSC[3,string]:toNumber()
+            warn("Self Destruct Enabled! Countdown set to: "+SelfDestructTime+" seconds")
+        }
+        foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
+                    SoundEm["Play",number] = 1
+                    SoundEm["SampleName",string] = "misc/bweeep.wav"
+                }
+                Color = vec(255,0,0)
+        timer("sd",500)
+    }
+}
+#########################Evacuate###############################
+elseif(CU&LSC[2,string] == "evac")
+{
+    if(ET==0)
+    {
+        foreach(DR, Door:wirelink = Doors){
+        Door["Open_1",number]=1
+        Door["Lock_1",number]=0
+        if(Door["Opened",number]==0)
+        {
+            Door["Lockdown",number]=0
+            Door["Toggle",number]=1
+            timer("SG-Door",500)
+        }
+    }
+        warn("EVACUATE BASE!")
+        ET=1
+        timer("wait1342",500)
+        timer("evac",500)
+    }
+    elseif(ET==1)
+    {
+        foreach(DR, Door:wirelink = Doors){
+        Door["Open_1",number]=0
+        if(Door["Opened",number]==1)
+        {
+            Door["Toggle",number]=1
+            timer("SG-Door",500)
+        }
+    }
+        warn("Evacuation Alert Disabled!")
+        ET=0
+        timer("wait1342",500)
+        stoptimer("evac")
+    }
+}
+#########################Shield Freq############################
+elseif(CU&LSC[2,string] == "freq")
+{
+    if(LSC[3,string] != "")
+    {
+        Shield_ID["Active",number] = 1
+        Shield_ID["Frequency",number] = LSC[3,string]:toNumber()
+        say("Set Weapon Frequency to: "+Shield_ID["Frequency",number])
+    }
+    else{
+        Shield_ID["Active",number] = 0
+        Shield_ID["Frequency",number] = 0
+        say("Disabled Weapon Frequency")
+    }
+}
+#########################Transporter#####################################################################        
+                                               
+                                        
+    elseif (CU & LSC[2,string] == "beam") {
+        hideChat(1)
+			     if(Pad){
+            ######Origin#############
+            if(LSC[3,string] == "me"){
+                Beam1 = O
+            }
+            elseif(LSC[3,string] == "this" | LSC[3,string] == "that"){
+                
+                if(O:aimEntity():isValid()){
+                    Beam1 = O:aimEntity()
+                }
+                else{say("Cant find an object!")}
+            }
+            else{
+                Find1 = findPlayerByName(LSC[3,string])
+                if(Find1:isValid()){
+                    Beam1 = findPlayerByName(LSC[3,string])
+                }
+                else{say("Can not lock on "+LSC[3,string])
+                    }
+            }
+            
+            ###########Destination###########
+            if(Beam1:isValid()){
+            if(BLoc:exists(LSC[5,string])){
+                Pad["Origin",vector] = Beam1:pos()
+                Pad["Dest",vector] = BLoc[LSC[5,string],vector]+vec(50,0,0)
+                say("Beaming "+Beam1:name()+" to "+LSC[5,string])
+                timer("beamtovec",200)
+            }
+            elseif(LSC[5,string] == "pad"){
+                Pad["Origin",vector] = Beam1:pos()
+                Pad["Dest",vector] = Pad:entity():pos()+vec(50,0,0)
+                #print("Test")
+                say("Beaming "+Beam1:name()+" to Pad")
+                timer("beampad",200)
+            }
+            else{
+                Find2 = findPlayerByName(LSC[5,string])
+                if(Find2:isValid()){
+                    Beam2 = findPlayerByName(LSC[5,string])
+                    Pad["Origin",vector] = Beam1:pos()
+                    Pad["Dest",vector] = Beam2:pos()+vec(50,0,0)
+                    say("Beaming "+Beam1:name()+" to "+Beam2:name())
+                    timer("beamtovec",200)
+                }
+                else{say("Not able to get destination")}
+            }
+        }
+        }
+        
+				else{warn("No Transporter Pad Connected!")}
+				}
+				
+##########################Cloak########################################################################
+			elseif (CU & LS:find("cloak on")) {
+        hideChat(1)
+		if(Cloak){
+        if(Cloak["Active",number] == 1){
+            owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")
+        say("Cloak is already active!")
+        }
+        elseif(Cloak["Active",number] == 0){
+            Cloak["Activate",number] = 1
+            say("Activating Cloak!")
+        }
+        }
+		else{warn("No Cloak connected!")}
+		}
+        elseif (CU & LS:find("cloak off")) {
+        hideChat(1)
+		if(Cloak){
+        if(Cloak["Active",number] == 0){
+            owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")
+        say("Cloak is already down!")
+        }
+        else{
+            Cloak["Activate",number] = 0
+        say("Deactivating Cloak!")}
+            }
+			else{warn("No Cloak connected!")}
+            }
+            
+########################Life Support####################################################################
+            elseif (CU & LS:find("lifesupport on")) {
+        hideChat(1)
+		if(LifeSupport){
+        if(LifeSupport["Active",number] == 1){
+            owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")
+        say("Lifesupport is already activated!")
+        }
+        else{
+            LifeSupport["Activate",number] = 1
+        say("Activating Lifesupport!")}
+            }
+			else{warn("No Lifesupport connected!")}
+            }
+            elseif (CU & LS:find("lifesupport off")) {
+        hideChat(1)
+		if(LifeSupport){
+        if(LifeSupport["Active",number] == 0){
+            owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")
+        say("Lifesupport is already deactivated!")
+        }
+        else{
+            LifeSupport["Activate",number] = 0
+        say("Deactivating Lifesupport!")}
+            }
+			else{warn("No Lifesupport connected!")}
+            }
+			
+##############################Identification##################################################################
+        elseif (CU & LS:find("what is this") | LS:find("what is that")){
+            hideChat(1)
+            Object = owner():aimEntity()
+            if(Object:isValid()){
+            Type = Object:type():lower()
+            TypeSplit = Type:explode("_")
+            if(Object:isPlayer()){
+                say("This is the player "+Object:name()+".")
+            }
+            elseif(TypeSplit[1,string] == "stargate"){
+                say("This is a "+Type+". It was build by the Ancients millions of years ago. It creates a microwormhole which allows to travel huge distances in a few seconds. This Stargate has the name: "+Object:stargateAddress())
+            }
+            elseif(Type != "stargate_*" & Type != "player"){
+                say("This object is "+Type+" .")
+            }
+        }
+            else{say("There is no Object or it is not in the database!")
+                    owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")}
+        }
+		
+#####################TARGET##############################################################################
+        elseif (CU & LSC[2,string] == "target") {
+            hideChat(1)
+            Com1 = LSC[3,string]
+            Com2 = LSC[4,string]
+            
+            if(Com1 != "" & Com2 == ""){
+                if(Com1 == "off"){
+                    Target = noentity()
+                    Sensor["Target",entity] = Target
+                    say("No Target aquired")
+                }
+                else{
+                
+                Target = findPlayerByName(Com1)
+                if(Target:isValid()){
+                    Sensor["Target",entity] = Target
+                say("Targeting "+Target:name())
+            }
+            else{say("Could not target "+LSC[3,string])
+                Target = noentity()
+                Sensor["Target",entity] = Target}
+            }
+            }
+            elseif(Com1 != "" & Com2 != ""){
+                if(TarEnt:exists(Com1)){
+                TOwner = findPlayerByName(Com2)
+                findClearBlackList()
+                findClearWhiteList()
+                findIncludePlayerProps(TOwner)
+                findByClass(TarEnt[Com1,string])
+                findSortByDistance(E:pos())
+                Target = findResult(1)
+            }
+            else{
+                TOwner = findPlayerByName(Com2)
+                findClearBlackList()
+                findClearWhiteList()
+                findIncludePlayerProps(TOwner)
+                findByClass(Com1)
+                findSortByDistance(E:pos())
+                Target = findResult(1)
+            }
+                if(Target:isValid()){
+                    Sensor["Target",entity] = Target
+                    Computer["Target",entity] = Target
+                say("Targetting "+TOwner:name()+" "+Target:type())
+            }
+            else{say("Could not target "+LSC[4,string]+" "+LSC[3,string])
+                Target = noentity()
+                Sensor["Target",entity] = Target}
+            }
+        }
+#########################WEAPONS############################################################################################
+        elseif (CU & LS:find("fire energy weapons") | LS:find("fire phaser")){
+            if(Target:isValid()){
+                timer("fireEweapons",100)
+                if(Target:isPlayer()){
+                say("Firing Phaser at "+Target:name()+"!")
+                }
+                else{say("Firing Phaser at "+Target:owner():name()+" "+Target:type()+"!")}
+            }
+            else{say("No target aquired. I dont know where to shoot.")}
+        }
+        elseif (CU & LS:find("energy weapons off") | LS:find("phaser off")){
+            foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
+                    EWeapon["Fire",number] = 0
+                    EWeapon["Vector",vector] = vec(0)
+                }
+                stoptimer("fireEweapons")
+                say("Turning phasers off!")  
+        }
+        elseif (CU & LS:find("fire drones")){
+            if(Target:isValid()){
+                timer("fireTurrets",100)
+                if(Target:isPlayer()){
+                say("Firing Turrets at "+Target:name()+"!")
+                }
+                else{say("Firing Turrets at "+Target:owner():name()+" "+Target:type()+"!")}
+            }
+            else{say("No target aquired. I dont know where to shoot.")}
+        }
+        elseif (CU & LS:find("drones off")){
+            foreach(Tur, Turret:wirelink = Turrets){
+                    Turret["Launch",number] = 0
+                    Turret["Vector",vector] = vec(0)
+                }
+                stoptimer("fireTurrets")
+                say("Turning Turrets off!")  
+        }
+        elseif (CU & LS:find("fire torpedos")){
+            if(Target:isValid()){
+                timer("fireTorpedos",100)
+                if(Target:isPlayer()){
+                say("Firing Torpedos at "+Target:name()+"!")
+                }
+                else{say("Firing Torpedos at "+Target:owner():name()+" "+Target:type()+"!")}
+            }
+            else{say("No target aquired. I dont know where to shoot.")}
+        }
+        elseif (CU & LS:find("torpedos off")){
+            foreach(Torp, Torpedo:wirelink = Torpedos){
+                    Torpedo["Fire",number] = 0
+                    Torpedo["Target",vector] = vec(0)
+                }
+                stoptimer("fireTorpedos")
+                say("Turning Torpedo Launchers off!")  
+        }
+        elseif (CU & LS:find("weapons off") |  LS:find("all weapons off")){
+            foreach(Torp, Torpedo:wirelink = Torpedos){
+                    Torpedo["Fire",number] = 0
+                    Torpedo["Target",vector] = vec(0)
+                }
+                stoptimer("fireTorpedos")
+            foreach(Tur, Turret:wirelink = Turrets){
+                    Turret["Fire",number] = 0
+                    Turret["Target",vector] = vec(0)
+                }
+                stoptimer("fireTurrets")
+            foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
+                    EWeapon["Fire",number] = 0
+                    EWeapon["Target",vector] = vec(0)
+                }
+                stoptimer("fireEweapons")
+                say("Turning all weapons off!")  
+        }
+################################WARP####################################################################################
+        elseif (CU & LSC[2,string] == "warp") {
+            hideChat(1)
+            if(Engine){
+                if(WLoc:exists(LSC[4,string])){
+                    LastLoc = E:pos()
+                    Engine["Destination",vector] = WLoc[LSC[4,string],vector]
+                    timer("warp",300)
+                    say("Warping to "+LSC[4,string])
+                }
+                elseif(LSC[3,string] == "back"){
+                    Engine["Destination",vector] = LastLoc
+                    timer("warp",300)
+                }
+                else{say("I dont know where "+LSC[4,string]+" is!")}
+                
+            }
+            else{warn("No Engine connected")}
+        }
+##############################TRANSLATE##################################################################################
+        elseif (CU & LSC[2,string] == "translate") {
+            WordCount = LSC:count()
+            TrLang = LSC[WordCount,string]
+            if(Lang:exists(TrLang)){
+                TrLangFinal = Lang[TrLang,string]
+                TrText1 = LS:replace("ai","")
+                TrText2 = TrText1:replace("translate","")
+                TrText3 = TrText2:replace("into","")
+                TrText4 = TrText3:replace(TrLang,"")
+                translate(TrText4,TrLangFinal)
+            }
+            else{say("I dont know which language you want me to translate it in.")}
+        }     
+##################NO CLIP####################################################################################		
+        elseif (CU & LS:find("enable noclip")) {
+            LifeSupport["Disable Noclip",number] = 0
+            say("Enabling Noclip in the ship")
+        } 
+        elseif (CU & LS:find("disable noclip")) {
+            LifeSupport["Disable Noclip",number] = 1
+            say("Disabling Noclip in the ship")
+        }  
+############################## TRACTOR BEAM#####################################################
+        elseif (CU & LS:find("tractor beam on")) {
+            if(TractorEmitter){
+                if(Target:isValid()){
+                foreach(TEmitter, Emitter:wirelink = TractorEmitter){
+                    Emitter["Fire",number] = 1
+                    Emitter["Target",entity] = Target
+                    Emitter["Move",number] = 0
+                }
+                say("Activating Tractor Beam")
+            }
+            else{say("No Target aquired!")}
+            }
+            else{
+              say("No Tractor Emitter connected!")
+            }
+            }    
+        elseif (CU & LS:find("tractor beam off")) {
+            if(TractorEmitter){
+               
+                foreach(TEmitter, Emitter:wirelink = TractorEmitter){
+                    Emitter["Fire",number] = 0
+                    Emitter["Target",entity] = noentity()
+                }
+                say("Deactivating Tractor Beam")
+            }
+            else{
+              say("No Tractor Emitter connected!")
+            }
+            }
+            
+ #################################REPAIR##########################################       
+        elseif (CU & LS:find("repair target")) {
+            if(Target:isValid()){
+                Core["Repair Entity",entity] = Target
+                Core["Fire Repair Beam",number] = 1
+            }
+            else{
+                say("No Target aquired!")
+            }
+        }
+        elseif (CU & LS:find("stop repairing target")) {
+            
+                Core["Repair Entity",entity] = noentity()
+                Core["Fire Repair Beam",number] = 0
+
+        }
+                               
+        elseif (CU & LS:find("restart")) {
+            say("Restarting Systems...")
+            reset()
+            
+            
+        }
+#################Lock CommandFunctions#############################################
+    elseif (CU& LSC[2,string]=="disable" & LSC[3,string]== "command" & LSC[4,string]== "functions"){
+        stopAllTimers()
+        timer("LockAI",100)        
+        AIUseOk = 0
+         for(F=56,500){
+        EGP:egpRemove(F)
+        }
+        warn("Disabling all command functions!")
+    }
+######################### ERROR#####################################################
+        else{say("I don't know what to do!")}                                                                                                          
+}				                                
+}
+else{
+runOnChat(1)
+O = owner()
+CU = chatClk(O)
+if(CU){
+    LS = lastSaid():lower()
+    LSC = LS:explode(" ")
+}
+if(CU & LSC[1,string] == "ai"){
+    hideChat(1)
+    if(CU & LS:find("ai restore command functions")){
+        stopAllTimers()     
+        AIUseOk = 1
+         for(F=56,500){
+        EGP:egpRemove(F)
+        timer("initegp",100)
+        }
+        say("Restoring command functions")
+    }
+    else{
+        warn("All function have been disabled. You need to restore them before using the AI.")
+    }
+}
+    }
+if(clk("fireEweapons")){
+foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
+                    EWeapon["Fire",number] = 1
+                    EWeapon["Vector",vector] = Target:pos()+TarEl[Target:type(),vector]
+                }
+            
+
+timer("fireEweapons",200)
+}
+
+if(clk("fireTurrets")){
+foreach(Tur, Turret:wirelink = Turrets){
+                    Turret["Launch",number] = 1
+                    Turret["Vector",vector] = Target:pos()+TarEl[Target:type(),vector]
+                }
+timer("fireTurrets",200)
+}
+
+if(clk("fireTorpedos")){
+foreach(Torp, Torpedo:wirelink = Torpedos){
+                    Torpedo["Fire",number] = 1
+                    Torpedo["Target",vector] = Target:pos()+TarEl[Target:type(),vector]
+                }
+timer("fireTorpedos",200)
+}
+if(clk("evac")){
+    Pad["Origin",vector] = Pad:entity():pos()
+    Pad["Dest",vector] = vec(0,0,0)
+    Pad["Send",number] = 1
+    E:soundPlay(999,3,"st/misc/abandon_ship.wav")
+timer("evac",2000)
+}
+if(clk("SG-Door"))
+{
+    foreach(DR, Door:wirelink = Doors){
+    Door["Toggle",number]==0
+}
+    
+}
+if(clk("beampad")){
+    Pad["Send",number] = 1}
+#else{Pad["Send",number] = 0}
+if(clk("beamtovec")){
+    Pad["Send",number]=1}
+#else{Pad["Send",number]=0}
+if(clk("warp")){
+    Engine["Warp",number]=1}
+else{Engine["Warp",number]=0}
+
+if(clk("think")){
+    EGP:egpText(901,"[XCO][C-DALE] Rainbow Dash",vec2(5,500))
+    EGP:egpSize(901,12)
+    Shield["Diver Power",number] = -1
+    
+    foreach(Light, L:wirelink = Lights){
+            L["RGB",vector] = Color
+                }
+    if(changed(Target:isValid()) && Target:isValid() == 0){
+        
+                stoptimer("fireEweapons")
+                stoptimer("fireTurrets")
+                stoptimer("fireTorpedos")
+                Target = noentity()
+                
+        foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
+                    EWeapon["Fire",number] = 0
+                    EWeapon["Target",vector] = vec(0)
+                    EWeapon["Vector",vector] = vec(0)
+                }
+                
+                
+        foreach(Tur, Turret:wirelink = Turrets){
+                    Turret["Fire",number] = 0
+                    Turret["Target",vector] = vec(0)
+                }
+        foreach(Torp, Torpedo:wirelink = Torpedos){
+                    Torpedo["Fire",number] = 0
+                    Torpedo["Target",vector] = vec(0)
+                }
+        say("All Targets have been destroyed. Turning off all weapons.")
+    }
+    
+timer("think",2000)
+}
+if(httpClk()){
+    say("The translation is '"+translate(TrText4,TrLangFinal)+"'.")
+
+}
