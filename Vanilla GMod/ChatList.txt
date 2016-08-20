@@ -1,0 +1,94 @@
+@name Chat-System-LOGGER
+@inputs 
+@outputs 
+@persist Say:string List:array I PC H M S SC LOG:string
+@trigger 
+
+interval(100)
+runOnFile(1)
+if(first()|dupefinished()){
+    I=0
+    PC=0
+    SC=0
+    
+    LOG = time("day"):toString()+"."+time("month"):toString()+"."+time("year"):toString()+"LOG.txt"
+    print("E2 Made by [XCO][CDG] Rainbow Dash")
+    E=entity()
+    fileLoad(LOG)
+    fileAppend(LOG,"########################################################\n"+"SERVER:"+hostname()+" IP:"+"-FUNCTION DISABLED-"+"\n"+"########################################################\n")
+}
+H=time("hour")+1
+M=time("min")
+S=time("sec")
+Time="["+H+":"+M+":"+S+"]"
+runOnChat(1)
+
+
+if(chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Argument1 = LastSaid[2,string]
+    Argument2 = LastSaid[3,string]
+    print("CHATCLK")
+    if(Command=="!cspy")
+    {
+        if(Argument1=="1")
+        {
+            PC=1
+        }
+        if(Argument1=="0")
+        {
+            PC=0
+        }
+    }
+    elseif(Command=="!schat"){
+        if(Argument1=="1")
+        {
+            SC=1
+            print("Enabled Logging")
+            
+        }
+        if(Argument1=="0")
+        {
+            SC=0
+            print("Enabled Logging")
+        }
+    }
+    elseif(Command=="!file"){
+        print(LOG)
+        print("File:"+fileLoaded())
+    }
+}
+
+#####SYSTEM######
+if(chatClk()){
+  Say = Time+lastSpoke():name()+":"+lastSaid()
+  List[I,string]=Say
+  I++
+}
+if(PC==1){
+    if(chatClk()){
+        printColor(Time,vec(255,255,0),lastSpoke():name(),vec(255,255,255)," : ",vec(0,255,255),lastSaid())
+    }
+    #print("Chat Spy Activated")
+}
+if(PC==0){
+    #print("Chat Spy Disabled")
+}
+if(SC==1){
+    if(chatClk()){
+        if (fileCanWrite()){
+            fileAppend(LOG,Say+"\n")
+            print("Chat Log Activated")
+        }
+        else{
+            print("Logging not Possible")
+        }
+    }
+}
+if(SC==0){
+    #print("Chat Log Disabled")
+}
+
+
+

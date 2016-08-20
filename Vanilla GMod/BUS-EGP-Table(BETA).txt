@@ -1,0 +1,168 @@
+@name EGP Table Test
+@inputs EGP:wirelink
+@outputs
+@persist 
+@persist BNAME:string Entities:array G:gtable ARR:array Busse:table OldDist:array
+@trigger  
+
+interval(100)
+signalSetGroup("Bus")
+dsJoinGroup("Bus")    
+G = gTable("Businfo")
+if(first()|dupefinished())
+{
+    EGP:egpClear()    
+    #G:clear()
+    G["Bus", table] = table()
+    timer("Tabele",250)
+}
+
+
+ 
+H=time("hour")+1
+M=time("min")
+S1=time("sec")
+
+if(H<10){
+    HH="0"+H:toString()
+}
+else{
+    HH=H:toString()
+}
+if(M<10){
+    MM="0"+M:toString()
+}
+else{
+    MM=M:toString()
+}
+if(S1<10){
+    SS="0"+S1:toString()
+}
+else{
+    SS=S1:toString()
+}
+
+TIME=HH+":"+MM+":"+SS
+
+EGP:egpBox(1,vec2(250,250),vec2(550,550))
+EGP:egpColor(1,vec(0,0,165))
+
+EGP:egpBox(2,vec2(355,60),vec2(290,60))
+EGP:egpColor(2,vec(0,0,0))
+
+EGP:egpSize(3,55)
+EGP:egpColor(3,vec(250,250,250))
+EGP:egpText(3,"Fahrplan",vec2(255,30))
+
+EGP:egpBox(5,vec2(255,300),vec2(480,400))
+EGP:egpColor(5,vec(100,100,100))
+
+#[EGP:egpBox(4,vec2(255,205),vec2(480,180))
+EGP:egpColor(4,vec(100,100,100))
+
+EGP:egpBox(5,vec2(255,410),vec2(480,180))
+EGP:egpColor(5,vec(100,100,100))
+]#
+#[EGP:egpSize(6,25)
+EGP:egpColor(6,vec(250,250,250))
+EGP:egpText(6,"Kommende Busse:",vec2(10,90))
+
+EGP:egpSize(7,25)
+EGP:egpColor(7,vec(250,250,250))
+EGP:egpText(7,"Sich Entfernende Busse:",vec2(10,295))
+]#
+EGP:egpBox(9,vec2(115,60),vec2(200,60))
+EGP:egpColor(9,vec(150,150,150))
+
+EGP:egpSize(10,50)
+EGP:egpColor(10,vec(0,0,0))
+EGP:egpText(10,TIME,vec2(20,33))
+
+EGP:egpLine(11,vec2(110,100),vec2(110,500))
+EGP:egpSize(11,5)
+
+EGP:egpLine(12,vec2(380,100),vec2(380,500))
+EGP:egpSize(12,5)
+
+#[EGP:egpLine(11,vec2(110,115),vec2(110,295))
+EGP:egpSize(11,5)
+
+EGP:egpLine(12,vec2(380,115),vec2(380,295))
+EGP:egpSize(12,5)
+
+EGP:egpLine(13,vec2(110,321),vec2(110,500))
+EGP:egpSize(13,5)
+
+EGP:egpLine(14,vec2(380,321),vec2(380,500))
+EGP:egpSize(14,5)
+]#
+EGP:egpSize(15,35)
+EGP:egpColor(15,vec(250,250,250))
+#EGP:egpText(15,"888    MusterStrasse      1000m",vec2(35,120))
+#EGP:egpText(15,BLINE+"    "+BDIRECTION+"      "1000m",vec2(35,120))
+EGP:egpSize(17,10)
+EGP:egpColor(17,vec(250,250,250))
+EGP:egpText(17,"V:A.1 ALPHA VERSION",vec2(400,500))
+
+#G:clear()
+#E:egpClear()
+#for(F=50,500){
+#    EGP:egpRemove(F)
+#}
+if (clk("Tabele")){
+Busse = G["Bus", table]
+Naehrt = table()
+Entfernt = table()
+for (I=1,Busse:count()){
+
+        Bus = Busse[I, table]
+        ID = Bus["ID", number]
+        
+        Xdirec = I+70
+        Xname = I+50
+        Xrange = I+60
+        EGP:egpSize(Xname,35)
+        EGP:egpText(Xname,Bus["Line", string],vec2(25,I*45+70))
+        EGP:egpSize(Xdirec,35)
+        EGP:egpText(Xdirec,Bus["Direc", string],vec2(120,I*45+70))
+        EGP:egpSize(Xrange,35)
+        EGP:egpText(Xrange,toString(round(Bus["Entity", entity]:pos():distance(entity():pos())))+"m",vec2(390,I*45+70))
+        #ARR = Busse["ID"]
+        #[if(round(Bus["Entity", entity]:pos():distance(entity():pos())) > OldDist[I,number]){
+       OldDist[I,number]=round(round(Bus["Entity", entity]:pos():distance(entity():pos())))
+          Entfernt:pushTable(Bus)
+       }
+       if(round(Bus["Entity", entity]:pos():distance(entity():pos()))<OldDist[I,number]){
+           OldDist[I,number]=round(round(Bus["Entity", entity]:pos():distance(entity():pos())))
+           Naehrt:pushTable(Bus)
+        }]#
+}
+timer("Tabele",250)
+}
+#[for (I=1,Naehrt:count()){
+        Bus = Naehrt[I, table]
+        Xdirec = I+70
+        Xname = I+50
+        Xrange = I+60
+        EGP:egpSize(Xname,35)
+        EGP:egpText(Xname,Bus["Line", string],vec2(25,I*45+70))
+        EGP:egpSize(Xdirec,35)
+        EGP:egpText(Xdirec,Bus["Direc", string],vec2(120,I*45+70))
+        EGP:egpSize(Xrange,35)
+        EGP:egpText(Xrange,toString(round(Bus["Entity", entity]:pos():distance(entity():pos())))+"m",vec2(390,I*45+70))    
+}
+
+for (I=1,Entfernt:count()){
+        Bus = Entfernt[I, table]
+        Xdirec = I+100
+        Xname = I+80
+        Xrange = I+90
+        EGP:egpSize(Xname,35)
+        EGP:egpText(Xname,Bus["Line", string],vec2(25,I*45+120))
+        EGP:egpSize(Xdirec,35)
+        EGP:egpText(Xdirec,Bus["Direc", string],vec2(120,I*45+120))
+        EGP:egpSize(Xrange,35)
+        EGP:egpText(Xrange,toString(round(Bus["Entity", entity]:pos():distance(entity():pos())))+"m",vec2(390,I*45+120))    
+}
+]#
+##TEST##

@@ -1,13 +1,14 @@
 @name RD-AI
 @inputs  EGP:wirelink
-@persist [Core,Shield,EnergyCore,WaterCore,RefinementCore,WaterCollector,Node,LifeSupport,Engine,Sensor,Pad,Cloak,Computer,SD,Shield_ID]:wirelink
-@persist [G,AIUseOk,X,LoadBar1,ConnectedSys,TarAq,Strenght,FireRate,Evacuate,SelfDestruct,SelfDestructTime,Zoomm,LockCol,ET]:number
+@persist [Core,Shield,EnergyCore,WaterCore,RefinementCore,WaterCollector,Node,LifeSupport,Engine,Sensor,Pad,Cloak,Computer,SD,Shield_ID,TarCore]:wirelink
+@persist [G,AIUseOk,X,LoadBar1,ConnectedSys,TarAq,Strenght,FireRate,Evacuate,SelfDestruct,SelfDestructTime,Zoomm,LockCol,ET,LSCo,EC]:number
 @persist [BLoc,WLoc,TorpType,TarEnt,TarEl,Lang]:table
 @persist [Cursor]:vector2
 @persist [User,Target,O,TOwner,E]:entity
 @persist [Name,Orders,LS]:string
-@persist [Players,Stuff,EnergyWeapons,Torpedos,Turrets,Rockets,AllWeapons,SoundEmitter,Lights,TractorEmitter,LSE,Doors]:array
-@persist [Color,WarpDest]:vector
+@persist [REMLIST,Players,Stuff,EnergyWeapons,Torpedos,Turrets,Rockets,AllWeapons,SoundEmitter,Lights,TractorEmitter,LSE,Doors,TarStuff,LSS]:array
+@persist [Color,WarpDest,ShColor]:vector
+@model models/madman07/supergate_dhd/supergate_dhd.mdl
 @autoupdate
 #################MADE BY SuperPlayer#########################################
 #Version 2.0
@@ -24,6 +25,7 @@ if(first()| duped()){
     Map = map()
     EGP:egpClear()
     ET=0
+    EC=56
     #Stuff = E:getConstraints()
     
     #If you get a Tick-Quota remove the Commend symbols of the following and comment the Stuff = E:getConstraints() in line 25
@@ -33,6 +35,7 @@ if(first()| duped()){
     findIncludePlayerProps(O)
     findInSphere(E:pos(),4500)
     Stuff = findToArray()
+    
     
     
     
@@ -125,6 +128,7 @@ function string translate(Text:string, Language:string){
     Doors =array()
     Turrets = array()
     Torpedos = array()
+    LSS = array()
     
     
     
@@ -135,7 +139,7 @@ if(clk("startegp")){
     
     
         EGP:egpBox(1,vec2(256,256),vec2(512,512))
-        EGP:egpColor(1,vec(25,25,25))
+        EGP:egpColor(1,vec(60))
 
         EGP:egpLine(2,vec2(14,15),vec2(116,15))      
         EGP:egpLine(3,vec2(100,15),vec2(108,4))     
@@ -152,7 +156,7 @@ if(clk("startegp")){
     #RightSide
         
         EGP:egpLine(13,vec2(497,15),vec2(497,50))
-        for(F=2,13){ EGP:egpSize(F,5) }
+        for(F=2,13,1){ EGP:egpSize(F,5) }
         EGP:egpLine(14,vec2(500,49),vec2(500,151))
         EGP:egpSize(14,12)
         EGP:egpLine(15,vec2(497,44),vec2(505,50))
@@ -212,14 +216,14 @@ if(clk("startegp")){
         EGP:egpSize(38,5)
         EGP:egpLine(39,vec2(390,497),vec2(498,497))
         EGP:egpSize(39,5)
-       for(F=2,39){ EGP:egpColor(F,vec(0,100,230)) }
+       for(F=2,39,1){ EGP:egpColor(F,vec(0,100,230)) }
         
         EGP:egpBox(40,vec2(256,300),vec2(300,150))
         EGP:egpSize(40,10)
         EGP:egpColor(40,vec(100,100,100))
         EGP:egpBoxOutline(41,vec2(256,300),vec2(300,150))
         EGP:egpSize(41,10)
-        EGP:egpColor(41,vec(0,0,0))
+        EGP:egpColor(41,vec(0))
         EGP:egpBox(42,vec2(256,330),vec2(270,30))
         EGP:egpSize(42,10)
         EGP:egpColor(42,vec(0,0,0))
@@ -231,7 +235,7 @@ if(clk("startegp")){
         EGP:egpText(46,"",vec2(256,345))
         EGP:egpAlign(46,1)        
         
-    EGP:egpText(901,"Made by SuperPlayer",vec2(5,500))
+    EGP:egpText(901,"",vec2(5,500))
     EGP:egpSize(901,12)
     
                 
@@ -245,6 +249,7 @@ LoadBar1++
     if(LoadBar1 > 35){
         stoptimer("wireship")
         stoptimer("wire2")
+        timer("GReset",100)
         timer("setvars",100)
         if(Core){ConnectedSys++}
         if(Shield){ConnectedSys++}
@@ -252,14 +257,13 @@ LoadBar1++
         if(EnergyCore){ConnectedSys++}
         if(WaterCore){ConnectedSys++}
         if(RefinementCore){ConnectedSys++}
-        if(LifeSupport){ConnectedSys++}
         if(Engine){ConnectedSys++}
         if(Sensor){ConnectedSys++}
         if(Pad){ConnectedSys++}
         if(Cloak){ConnectedSys++}
         if(Computer){ConnectedSys++}
         if(Shield_ID){ConnectedSys++}
-        ConnectedSys = ConnectedSys+EnergyWeapons:count()+Turrets:count()+Torpedos:count()+Rockets:count()+Lights:count()+SoundEmitter:count()+TractorEmitter:count()+Doors:count()
+        ConnectedSys = ConnectedSys+EnergyWeapons:count()+Turrets:count()+Torpedos:count()+Rockets:count()+Lights:count()+SoundEmitter:count()+TractorEmitter:count()+Doors:count()+LSS:count()
         EGP:egpSetText(46,"Connected Systems: "+ConnectedSys)
         
         
@@ -286,7 +290,7 @@ if(clk("wire2")){
 
         
 
-                if(V:type() == "ship_core_asgard" & !Core){
+                if(V:type():sub(0,9) == "ship_core" & !Core){
                     Core = V:wirelink()
                     
                                             } 
@@ -310,11 +314,14 @@ if(clk("wire2")){
                     RefinementCore = V:wirelink()
                    
                                             }
-                elseif(V:type() == "stargazer_ls_core" && !LifeSupport){
-                    LifeSupport = V:wirelink()
-                    LifeSupport["Name",string] = Name
-                   
-                                            }      
+                elseif(V:type() == "liveable_module" | V:type() == "base_climate_control"){
+                    local LifeSupport = V:wirelink()
+                    LSCo=1
+                    LSS:pushWirelink(LifeSupport)
+                    LifeSupport["On",number]=0
+                    LifeSupport["Radius",number]=10000
+                
+                                            }     
                                             
                 elseif(V:type() == "warpdrive" && !Engine){
                     Engine = V:wirelink()
@@ -383,9 +390,14 @@ if(clk("wire2")){
                     TractorEmitter:pushWirelink(P)
                 } 
                         }                               
-            else{stoptimer("wire2")}
+            else{stoptimer("wire2") timer("GReset",100)}
 timer("wire2",20)  
 #printTable(Stuff)            
+}
+if(clk("GReset"))
+{
+    G = 0
+    stoptimer("GReset")
 }
 
 if(clk("setvars")){
@@ -408,8 +420,7 @@ if(clk("setvars")){
             SelfDestructTime = 60
             Zoom = 47
             SensorEnt = E
-            Strenght = 10
-            FireRate  = 10
+            Strenght = 0
             LockCol = 1
             Core["Enable Plating",number] = 1
             Target = noentity()
@@ -478,20 +489,13 @@ if(clk("initegp")){
     EGP:egpBoxOutline(48,vec2(62,150),vec2(75,30))
     EGP:egpColor(48,vec(255,255,255))
     EGP:egpText(49,"Engenering",vec2(30,145))
-    EGP:egpSize(49,15)    
+    EGP:egpSize(49,15)     
     
-    EGP:egpBox(50,vec2(62,200),vec2(75,30))
-    EGP:egpColor(50,vec(0,200,230))
-    EGP:egpBoxOutline(51,vec2(62,200),vec2(75,30))
-    EGP:egpColor(51,vec(255,255,255))
-    EGP:egpText(52,"Sensoren",vec2(30,195))
-    EGP:egpSize(52,15)    
-    
-    EGP:egpBox(53,vec2(62,250),vec2(75,30))
+    EGP:egpBox(53,vec2(62,200),vec2(75,30))
     EGP:egpColor(53,vec(0,200,230))
-    EGP:egpBoxOutline(54,vec2(62,250),vec2(75,30))
+    EGP:egpBoxOutline(54,vec2(62,200),vec2(75,30))
     EGP:egpColor(54,vec(255,255,255))
-    EGP:egpText(55,"Warp",vec2(30,245))
+    EGP:egpText(55,"Warp",vec2(30,195))
     EGP:egpSize(55,15)   
     
     stoptimer("initegp")
@@ -500,7 +504,7 @@ if(clk("initegp")){
     EGP:egpSize(56,40)
 
     EGP:egpText(57,"Ship Name: "+Name,vec2(120,70))
-    EGP:egpText(59,"Ship Captain: "+O:steamID(),vec2(120,130))
+    EGP:egpText(59,"Ship Captain: "+O:name(),vec2(120,130))
     
     EGP:egpLine(60,vec2(120,180),vec2(495,180))
     
@@ -542,51 +546,18 @@ if(clk("initegp")){
     EGP:egpAlign(78,1)
     EGP:egpSize(78,15)
     
-    EGP:egpLine(79,vec2(130,460),vec2(480,460))
-    EGP:egpSize(79,15)
-    EGP:egpColor(79,vec(100,100,100))
-    EGP:egpLine(80,vec2(130,460),vec2(130+Computer["Aux Power",number]*3.5,460))
-    EGP:egpSize(80,15)
-    EGP:egpColor(80,vec(0,Computer["Aux Power",number]*1.8,Computer["Aux Power",number]*2.55))
-    EGP:egpText(81,"Auxiliary Power",vec2(300,450))
-    EGP:egpAlign(81,1)
+    EGP:egpText(79,"",vec2(360,280))
+    EGP:egpAlign(79,1)
+    EGP:egpText(80,"",vec2(360,320))
+    EGP:egpAlign(80,1)
+    EGP:egpText(81,"Ship Type: "+Core:entity():type(),vec2(120,160))
+    EGP:egpColor(81,vec(255))
     
-    EGP:egpText(82,"",vec2(360,280))
-    EGP:egpAlign(82,1)
-    EGP:egpText(83,"",vec2(360,320))
+    EGP:egpRoundedBox(82,vec2(420,85),vec2(140,20))
+    EGP:egpColor(82,vec(255,220,0))
+    EGP:egpText(83,Name,vec2(420,75))
     EGP:egpAlign(83,1)
-    EGP:egpText(84,"Ship Type: "+Core:entity():toString(),vec2(120,160))
-    
-    EGP:egpCircle(85,vec2(420,100),vec2(60,60))
-    if(Core["Type",string] == "Standart"){
-    EGP:egpColor(85,vec(200))
-    }
-    elseif(Core["Type",string] == "Tactical"){
-    EGP:egpColor(85,vec(255,0,0))
-    }
-    elseif(Core["Type",string] == "Science"){
-    EGP:egpColor(85,vec(0,0,255))
-    }
-    elseif(Core["Type",string] == "Engineering"){
-    EGP:egpColor(85,vec(255,255,0))
-    }
-    EGP:egpCircle(86,vec2(420,100),vec2(55,55))
-    EGP:egpColor(86,vec(120,120,120))
-    EGP:egpTriangle(87,vec2(420,40),vec2(380,130),vec2(460,130))
-    EGP:egpColor(87,vec(255,200,0))
-    EGP:egpTriangle(88,vec2(420,110),vec2(380,130),vec2(460,130))
-    EGP:egpColor(88,vec(120,120,120))
-    EGP:egpRoundedBox(89,vec2(420,85),vec2(140,20))
-    EGP:egpColor(89,vec(255,220,0))
-    EGP:egpRoundedBox(90,vec2(420,150),vec2(120,20))
-    EGP:egpColor(90,vec(255,220,0))
-    EGP:egpText(91,Name,vec2(420,75))
-    EGP:egpAlign(91,1)
-    EGP:egpColor(91,vec(0))
-    EGP:egpText(92,"Admin-Vessel",vec2(420,143))
-    EGP:egpAlign(92,1)
-    EGP:egpColor(92,vec(0))
-    EGP:egpSize(92,15)
+    EGP:egpColor(83,vec(0))
     timer("think",1500)
     timer("status",100)
     timer("egp",100)
@@ -607,7 +578,7 @@ if(changed(Use) & Use){
         timer("status",100)
         stoptimer("tactical")
         stoptimer("engineering")
-        stoptimer("sensoren")
+        
         stoptimer("warpmain")
         stoptimer("warpcoordinates")
         stoptimer("warplocations")
@@ -617,16 +588,14 @@ if(changed(Use) & Use){
         EGP:egpColor(47,vec(0,200,230))
         EGP:egpColor(50,vec(0,200,230))
         EGP:egpColor(53,vec(0,200,230))
-        for(F=56,500){
+        for(F=56,500,1){
             EGP:egpRemove(F)
         }
-	EGP:egpText(56,"Ship Status",vec2(140,15))
+	   EGP:egpText(56,"Ship Status",vec2(140,15))
     EGP:egpSize(56,40)
 
     EGP:egpText(57,"Ship Name: "+Name,vec2(120,70))
-    #EGP:egpText(58,"Faction: "+O:getFaction(),vec2(120,100))
     EGP:egpText(59,"Ship Captain: "+O:name(),vec2(120,130))
-    EGP:egpText(84,"Ship Type: "+Core["Type",string],vec2(120,160))
     
     EGP:egpLine(60,vec2(120,180),vec2(495,180))
     
@@ -668,57 +637,27 @@ if(changed(Use) & Use){
     EGP:egpAlign(78,1)
     EGP:egpSize(78,15)
     
-    EGP:egpLine(79,vec2(130,460),vec2(480,460))
-    EGP:egpSize(79,15)
-    EGP:egpColor(79,vec(100,100,100))
-    EGP:egpLine(80,vec2(130,460),vec2(130+Computer["Aux Power",number]*3.5,460))
-    EGP:egpSize(80,15)
-    EGP:egpColor(80,vec(0,Computer["Aux Power",number]*1.8,Computer["Aux Power",number]*2.55))
-    EGP:egpText(81,"Auxiliary Power",vec2(300,450))
-    EGP:egpAlign(81,1)
+    EGP:egpText(79,"",vec2(360,280))
+    EGP:egpAlign(79,1)
+    EGP:egpText(80,"",vec2(360,320))
+    EGP:egpAlign(80,1)
+    EGP:egpText(81,"Ship Type: "+Core:entity():type(),vec2(120,160))
+    EGP:egpColor(81,vec(255))
     
-    EGP:egpText(82,"",vec2(360,280))
-    EGP:egpAlign(82,1)
-    EGP:egpText(83,"",vec2(360,320))
+    EGP:egpRoundedBox(82,vec2(420,85),vec2(140,20))
+    EGP:egpColor(82,vec(255,220,0))
+    EGP:egpText(83,Name,vec2(420,75))
     EGP:egpAlign(83,1)
+    EGP:egpColor(83,vec(0))
+
     
-    EGP:egpCircle(85,vec2(420,100),vec2(60,60))
-    if(Core["Type",string] == "Standart"){
-    EGP:egpColor(85,vec(200))
-    }
-    elseif(Core["Type",string] == "Tactical"){
-    EGP:egpColor(85,vec(255,0,0))
-    }
-    elseif(Core["Type",string] == "Science"){
-    EGP:egpColor(85,vec(0,0,255))
-    }
-    elseif(Core["Type",string] == "Engineering"){
-    EGP:egpColor(85,vec(255,255,0))
-    }
-    EGP:egpCircle(86,vec2(420,100),vec2(55,55))
-    EGP:egpColor(86,vec(120,120,120))
-    EGP:egpTriangle(87,vec2(420,40),vec2(380,130),vec2(460,130))
-    EGP:egpColor(87,vec(255,200,0))
-    EGP:egpTriangle(88,vec2(420,110),vec2(380,130),vec2(460,130))
-    EGP:egpColor(88,vec(120,120,120))
-    EGP:egpRoundedBox(89,vec2(420,85),vec2(140,20))
-    EGP:egpColor(89,vec(255,220,0))
-    EGP:egpRoundedBox(90,vec2(420,150),vec2(120,20))
-    EGP:egpColor(90,vec(255,220,0))
-    EGP:egpText(91,Name,vec2(420,75))
-    EGP:egpAlign(91,1)
-    EGP:egpColor(91,vec(0))
-    EGP:egpText(92,Core["Type",string]+"-Vessel",vec2(420,143))
-    EGP:egpAlign(92,1)
-    EGP:egpColor(92,vec(0))
-    EGP:egpSize(92,15)
     }
     elseif(EGP:button(Cursor,44)){
         User:soundPlay(999,3,"console/beep04.wav")
         timer("tactical",100)
         stoptimer("status")
         stoptimer("engineering")
-        stoptimer("sensoren")
+        
         stoptimer("warpmain")
         stoptimer("warpcoordinates")
         stoptimer("warplocations")
@@ -727,19 +666,26 @@ if(changed(Use) & Use){
         EGP:egpColor(47,vec(0,200,230))
         EGP:egpColor(50,vec(0,200,230))
         EGP:egpColor(53,vec(0,200,230))
-         for(F=56,500){
+         for(F=56,500,1){
             EGP:egpRemove(F)
         }
 	 EGP:egpText(56,"Tactical",vec2(140,15))
     EGP:egpSize(56,40)
     
-    EGP:egpBox(57,vec2(400,180),vec2(170,170))
-    EGP:egpColor(57,vec(128))
+    EGP:egpLine(58,vec2(113,275),vec2(500,275))
+    EGP:egpSize(58,10)
+    EGP:egpColor(58,Color)
+    #EGP:egpBox(158,vec2(400,180),vec2(170,170))
+    #EGP:egpColor(158,vec(128))
+    #EGP:egpBox(58,vec2(245,390),vec2(120,185))
+    #EGP:egpColor(58,vec(120))
     
-    EGP:egpBox(58,vec2(400,380),vec2(170,170))
-    EGP:egpColor(58,vec(128))
+    EGP:egpBox(59,vec2(400,380),vec2(170,170))
+    EGP:egpColor(59,vec(128))
     
-    EGP:egpLine(59,vec2(120,280),vec2(495,280))
+
+    
+    #EGP:egpLine(59,vec2(120,280),vec2(495,280))
     
     EGP:egpText(60,"No Target",vec2(400,60))
     EGP:egpAlign(60,1)
@@ -764,81 +710,101 @@ if(changed(Use) & Use){
     EGP:egpBox(69,vec2(150,460),vec2(50,50))
     EGP:egpColor(69,vec(255,0,0))
     
-    EGP:egpText(70,"Strength",vec2(210,300))
-    EGP:egpText(71,""+Strenght,vec2(240,330))
+    EGP:egpText(70,"Shield Strenght",vec2(188,300))
+    EGP:egpText(71,""+Strenght,vec2(240,340))
     EGP:egpBox(72,vec2(210,350),vec2(40,50))
     EGP:egpColor(72,vec(0,62,155))
     EGP:egpBox(73,vec2(280,350),vec2(40,50))
     EGP:egpColor(73,vec(0,62,155))    
-    EGP:egpText(74,"-",vec2(205,345))    
-    EGP:egpText(75,"+",vec2(275,345))    
+    EGP:egpText(74,"-",vec2(202,328))
+    EGP:egpSize(74,40)    
+    EGP:egpText(75,"+",vec2(267,328))  
+    EGP:egpSize(75,40)  
     
-    EGP:egpText(76,"Fire Rate",vec2(210,400))
-    EGP:egpText(77,""+FireRate,vec2(240,430))
-    EGP:egpBox(78,vec2(210,450),vec2(40,50))
-    EGP:egpColor(78,vec(0,62,155))
-    EGP:egpBox(79,vec2(280,450),vec2(40,50))
-    EGP:egpColor(79,vec(0,62,155))    
-    EGP:egpText(80,"-",vec2(205,445))    
-    EGP:egpText(81,"+",vec2(275,445))    
-        ###Enemy
-    EGP:egpLine(82,vec2(340,255),vec2(340,110))
+    EGP:egpBox(78,vec2(245,450),vec2(100,50))  
+    
+    EGP:egpText(79,"Shield: NS",vec2(190,380))
+    EGP:egpText(80,"Shield %: NS",vec2(190,400))
+    
+    
+    EGP:egpText(81,"Shield",vec2(220,440))
+    
+    
+    
+    
+    #EGP:egpText(76,"Fire Rate",vec2(210,400))
+    #EGP:egpText(77,""+FireRate,vec2(240,430))
+    #EGP:egpBox(78,vec2(210,450),vec2(40,50))
+    #EGP:egpColor(78,vec(0,62,155))
+    #EGP:egpBox(79,vec2(280,450),vec2(40,50))
+    #EGP:egpColor(79,vec(0,62,155))    
+    #EGP:egpText(80,"-",vec2(205,445))    
+    #EGP:egpText(81,"+",vec2(275,445))    
+###Enemy
+    EGP:egpLine(82,vec2(344,255),vec2(344,110))
     EGP:egpSize(82,30)
     EGP:egpColor(82,vec(0))
-    EGP:egpLine(83,vec2(340,255),vec2(340,110))
+    EGP:egpLine(83,vec2(344,255),vec2(344,110))
     EGP:egpSize(83,30)
     
-    EGP:egpLine(84,vec2(400,255),vec2(400,110))
+    EGP:egpLine(84,vec2(404,255),vec2(404,110))
     EGP:egpSize(84,30)
     EGP:egpColor(84,vec(0))
-    EGP:egpLine(85,vec2(400,255),vec2(400,110))
+    EGP:egpLine(85,vec2(404,255),vec2(404,110))
     EGP:egpSize(85,30)
     
-    EGP:egpLine(86,vec2(460,255),vec2(460,110))
+    EGP:egpLine(86,vec2(464,255),vec2(464,110))
     EGP:egpSize(86,30)
     EGP:egpColor(86,vec(0))
-    EGP:egpLine(87,vec2(460,255),vec2(460,110))
+    EGP:egpLine(87,vec2(464,255),vec2(464,110))
     EGP:egpSize(87,30)
-    ####Own
-    EGP:egpLine(88,vec2(340,455),vec2(340,310))
-    EGP:egpSize(88,30)
-    EGP:egpColor(88,vec(0))
-    EGP:egpLine(89,vec2(340,455),vec2(340,454-Core["Hull",number]/Core["Max Hull",number]*100*1.45))
+###Own
+
+    EGP:egpLine(89,vec2(344,455),vec2(344,310))
     EGP:egpSize(89,30)
+    EGP:egpColor(89,vec(0))
     
-    EGP:egpLine(90,vec2(400,455),vec2(400,310))
-    EGP:egpSize(90,30)
-    EGP:egpColor(90,vec(0))
-    EGP:egpLine(91,vec2(400,455),vec2(400,454-Core["Plating",number]*1.45))
+    EGP:egpLine(91,vec2(404,455),vec2(404,310))
     EGP:egpSize(91,30)
+    EGP:egpColor(91,vec(0))
   
-    EGP:egpLine(92,vec2(460,455),vec2(460,310))
-    EGP:egpSize(92,30)
-    EGP:egpColor(92,vec(0))
-    EGP:egpLine(93,vec2(460,455),vec2(460,454-Core["Shield",number]/Core["Max Shield",number]*100*1.45))
+    EGP:egpLine(93,vec2(464,455),vec2(464,310))
     EGP:egpSize(93,30)
+    EGP:egpColor(93,vec(0))
+   
+    EGP:egpLine(89,vec2(344,455),vec2(344,310))
+    EGP:egpSize(89,30)
+    EGP:egpColor(89,vec(0))
     
-    EGP:egpText(94,"Hull",vec2(310,180))
+    EGP:egpLine(91,vec2(404,455),vec2(404,310))
+    EGP:egpSize(91,30)
+    EGP:egpColor(91,vec(0))
+  
+    EGP:egpLine(93,vec2(464,455),vec2(464,310))
+    EGP:egpSize(93,30)
+    EGP:egpColor(93,vec(0))
+    
+    EGP:egpText(94,"Hull",vec2(314,180))
     EGP:egpAlign(94,1)
     EGP:egpAngle(94,90)
     
-    EGP:egpText(95,"Plating",vec2(365,180))
+    EGP:egpText(95,"Plating",vec2(369,180))
     EGP:egpAlign(95,1)
     EGP:egpAngle(95,90)
     
-    EGP:egpText(96,"Shield",vec2(425,180))
+    EGP:egpText(96,"Shield",vec2(429,180))
     EGP:egpAlign(96,1)
     EGP:egpAngle(96,90)
     
-    EGP:egpText(97,"Hull",vec2(310,380))
+    EGP:egpText(97,"Hull",vec2(314,380))
     EGP:egpAlign(97,1)
     EGP:egpAngle(97,90)
     
-    EGP:egpText(98,"Plating",vec2(365,380))
+    EGP:egpText(98,"Plating",vec2(369,380))
     EGP:egpAlign(98,1)
     EGP:egpAngle(98,90)
     
-    EGP:egpText(99,"Shield",vec2(425,380))
+    EGP:egpText(99,"Shield",vec2(429,380))
     EGP:egpAlign(99,1)
     EGP:egpAngle(99,90)
     }
@@ -847,7 +813,7 @@ if(changed(Use) & Use){
         timer("engineering",100)
         stoptimer("tactical")
         stoptimer("status")
-        stoptimer("sensoren")
+        
         stoptimer("warpmain")
         stoptimer("warpcoordinates")
         stoptimer("warplocations")
@@ -856,7 +822,7 @@ if(changed(Use) & Use){
         EGP:egpColor(41,vec(0,200,230))
         EGP:egpColor(50,vec(0,200,230))
         EGP:egpColor(53,vec(0,200,230))
-         for(F=56,500){
+         for(F=56,500,1){
             EGP:egpRemove(F)
         }
         EGP:egpText(56,"Engineering",vec2(140,15))
@@ -923,59 +889,14 @@ if(changed(Use) & Use){
     EGP:egpText(82,"Oxygen",vec2(427,380))
     EGP:egpAlign(82,1)
     }
-    elseif(EGP:button(Cursor,50)){
-        User:soundPlay(999,3,"console/beep04.wav")
-        timer("sensoren",100)
-        stoptimer("tactical")
-        stoptimer("engineering")
-        stoptimer("status")
-        stoptimer("warpmain")
-        stoptimer("warpcoordinates")
-        stoptimer("warplocations")
-        EGP:egpColor(50,vec(0,100,230))
-        EGP:egpColor(44,vec(0,200,230))
-        EGP:egpColor(47,vec(0,200,230))
-        EGP:egpColor(41,vec(0,200,230))
-        EGP:egpColor(53,vec(0,200,230))
-         for(F=56,500){
-            EGP:egpRemove(F)
-        }
-   EGP:egpText(56,"Sensor",vec2(140,15))
-    EGP:egpSize(56,40)
-    
-    EGP:egpCircle(57,vec2(270,260),vec2(150,200))
-    EGP:egpColor(57,vec(100))
-    EGP:egpCircleOutline(58,vec2(270,260),vec2(150,200))
-    EGP:egpColor(58,vec(0,180,255))
-    EGP:egpCircleOutline(59,vec2(270,260),vec2(100,150))
-    EGP:egpColor(59,vec(200))
-    EGP:egpCircleOutline(60,vec2(270,260),vec2(50,100))
-    EGP:egpColor(60,vec(200))
-    EGP:egpLine(61,vec2(120,256),vec2(420,260))
-    EGP:egpColor(61,vec(200))
-    EGP:egpLine(62,vec2(270,60),vec2(270,460))
-    EGP:egpColor(62,vec(200))
-
-    EGP:egpBoxOutline(63,vec2(460,260),vec2(60,380))
-    
-    EGP:egpLine(65,vec2(430,Zoom/0.2),vec2(490,Zoom/0.2))
-    EGP:egpColor(65,vec(0,180,255))
-    EGP:egpSize(65,5)
-    
-    EGP:egpText(66,"+",vec2(400,90))
-    EGP:egpSize(66,40)
-    EGP:egpText(67,"-",vec2(400,380))    
-    EGP:egpSize(67,50)
-    
-
-    }
     elseif(EGP:button(Cursor,53)){
         User:soundPlay(999,3,"console/beep04.wav")
         timer("warpmain",100)
         stoptimer("tactical")
         stoptimer("engineering")
-        stoptimer("sensoren")
+        
         stoptimer("status")
+        #EGP:egpClear()
         EGP:egpColor(53,vec(0,100,230))
         EGP:egpColor(44,vec(0,200,230))
         EGP:egpColor(47,vec(0,200,230))
@@ -983,7 +904,7 @@ if(changed(Use) & Use){
         EGP:egpColor(41,vec(0,200,230))
         
     
-         for(F=56,500){
+        for(F=56,500,1){     
             EGP:egpRemove(F)
         }
     EGP:egpText(56,"Warp Control",vec2(140,15))
@@ -992,17 +913,17 @@ if(changed(Use) & Use){
     EGP:egpBox(57,vec2(300,100),vec2(370,60))
     EGP:egpColor(57,vec(100))
     
-    EGP:egpBox(58,vec2(210,100),vec2(160,40))
-    EGP:egpColor(58,vec(0,200,255))
-    EGP:egpBoxOutline(59,vec2(210,100),vec2(160,40))
-    EGP:egpBox(60,vec2(390,100),vec2(160,40))
-    EGP:egpColor(60,vec(0,200,255))
-    EGP:egpBoxOutline(61,vec2(390,100),vec2(160,40))
+    EGP:egpBox(104,vec2(210,100),vec2(160,40))
+    EGP:egpColor(104,vec(0,200,255))
+    EGP:egpBoxOutline(105,vec2(210,100),vec2(160,40))
+    EGP:egpBox(106,vec2(390,100),vec2(160,40))
+    EGP:egpColor(106,vec(0,200,255))
+    EGP:egpBoxOutline(106,vec2(390,100),vec2(160,40))
     
-    EGP:egpText(62,"Locations",vec2(210,90))
-    EGP:egpAlign(62,1)
-    EGP:egpText(63,"Coordinates",vec2(390,90))
-    EGP:egpAlign(63,1)
+    EGP:egpText(107,"Locations",vec2(210,90))
+    EGP:egpAlign(107,1)
+    EGP:egpText(108,"Coordinates",vec2(390,90))
+    EGP:egpAlign(108,1)
     
     EGP:egpLine(64,vec2(120,430),vec2(490,430))
     
@@ -1029,8 +950,8 @@ if(changed(Use) & Use){
     EGP:egpBox(76,vec2(175,250),vec2(90,40))
     EGP:egpColor(76,vec(0,200,255))
     EGP:egpBoxOutline(77,vec2(175,250),vec2(90,40))
-    EGP:egpText(78,"Shakuras",vec2(175,240))
-    EGP:egpAlign(78,1)
+    EGP:egpText(103,"Shakuras",vec2(175,240))
+    EGP:egpAlign(103,1)
 
     EGP:egpBox(79,vec2(175,320),vec2(90,40))
     EGP:egpColor(79,vec(0,200,255))
@@ -1151,7 +1072,7 @@ if(clk("status")){
     }
     else{EGP:egpColor(64,vec(0,180,255))}
     
-    if(LifeSupport["Active",number] == 1){
+    if(LifeSupport["On",number] == 1){
         EGP:egpColor(67,vec(0,61,255))
     }
     else{EGP:egpColor(67,vec(0,180,255))}
@@ -1189,17 +1110,21 @@ if(changed(Use) & Use){
 }
     elseif(EGP:button(Cursor,67)){
         User:soundPlay(999,3,"console/beep04.wav")
-        if(LifeSupport){
-        if(LifeSupport["Active",number] == 1){
-            LifeSupport["Activate",number] = 0
+        if(LSCo==1){
+        foreach(LiSu, LifeSupport:wirelink = LSS){
+        if(LifeSupport["On",number] == 1){
+            LifeSupport["On",number] = 0
         }
         else{
-            LifeSupport["Activate",number] = 1
+            LifeSupport["On",number] = 1
         }
         }
+    }
+
         else{warn("No Life Support connected!")}
         }   
     elseif(EGP:button(Cursor,73)){
+        if(User==owner()){
         User:soundPlay(999,3,"console/beep04.wav")
         if(Evacuate == 1){
             Evacuate = 0
@@ -1221,6 +1146,7 @@ if(changed(Use) & Use){
         stoptimer("evac")
         
     }
+
     else{
         Evacuate = 1
         EGP:egpSetText(83,"Evacuate the Ship!")
@@ -1244,8 +1170,10 @@ if(changed(Use) & Use){
         timer("evac",200)
         
     }
+}
 }   
     elseif(EGP:button(Cursor,76)){
+        if(User==owner()){
         User:soundPlay(999,3,"console/beep04.wav")
     if(SelfDestruct == 1){
             SelfDestruct = 0
@@ -1277,27 +1205,53 @@ if(changed(Use) & Use){
     }
     } 
 }
+}
     
 timer("status",200)
 }
 if(clk("tactical")){
-
     EGP:egpSetText(71,""+Strenght)
-    EGP:egpSetText(77,""+FireRate)
-    EGP:egpLine(89,vec2(340,455),vec2(340,454-Core["Hull",number]/Core["Max Hull",number]*100))
-    EGP:egpLine(91,vec2(400,455),vec2(400,454-Core["Armor",number]/Core["Max Armor",number]*100))
-	   EGP:egpLine(93,vec2(460,455),vec2(460,454-Shield["Strenght",number]))
-	
+    #EGP:egpSetText(77,""+FireRate)
+    
+    if(Shield["Active",number]==1){
+        ShStatus="Active"
+        EGP:egpColor(78,vec(0,120,0))
+    }
+    else{
+        ShStatus="Disab."
+        EGP:egpColor(78,vec(120,0,0))
+    }
+    
+    EGP:egpText(79,"Shield: "+ShStatus,vec2(190,380))
+    EGP:egpText(80,"Shield %: "+Shield["Strength",number]:toString():sub(0,3),vec2(190,400))
+    
+    EGP:egpBox(78,vec2(245,450),vec2(100,50))
+    
+
+    
+    if(!Core){
+        EGP:egpLine(88,vec2(344,455),vec2(344,454))
+        EGP:egpSize(88,30)
+        EGP:egpLine(92,vec2(464,455),vec2(464,454))
+        EGP:egpSize(92,30)
+        EGP:egpLine(90,vec2(404,455),vec2(404,454))
+        EGP:egpSize(90,30)
+    }
+    else{
+       EGP:egpLine(88,vec2(344,455),vec2(344,454-(Core["Hull",number]/Core["Max Hull",number]*100*1.45)))
+       EGP:egpSize(88,30)
+       EGP:egpLine(92,vec2(464,455),vec2(464,454-(Core["Shield",number]/Core["Max Shield",number]*100*1.45)))
+       EGP:egpSize(92,30)
+       EGP:egpLine(90,vec2(404,455),vec2(404,454-Core["Armor",number]/Core["Max Armor",number]*100*1.45))
+       EGP:egpSize(90,30)
+	   }
     if(Target:isValid()){
-        if(Target:type() == "ship_core_asgard"){
-            Hull = Sensor["% Hull",number]
-            Plating = Sensor["% Armor",number]
-            Shields = Sensor["% Shield",number]
-        }
-        elseif(Target:type() == "st_shuttle_type11"){
-            Hull = Sensor["Health",number]/Sensor["Max Health",number]*100*1.45
-            Shields = Sensor["Shields",number]*1.45
-            Plating = Sensor["Armour",number]/200000*100*1.45
+        #print("Debug TC "+TarCore:entity():toString())
+        if(TarCore:entity():type():sub(0,9) == "ship_core"){
+            #print("Debug: Core Reg.")
+            Hull = TarCore["Hull",number]/TarCore["Max Hull",number]*100*1.45
+            Plating = TarCore["Armor",number]/TarCore["Max Armor",number]*100*1.45
+            Shields = TarCore["Shield",number]/TarCore["Max Shield",number]*100*1.45
         }
         else{
             Hull = 1
@@ -1314,9 +1268,13 @@ if(clk("tactical")){
         }
         EGP:egpSetText(66,toString(round(E:pos():distance(Target:pos()))))
         
-        EGP:egpLine(83,vec2(340,255),vec2(340,255-Hull))
-        EGP:egpLine(85,vec2(400,255),vec2(400,255-Plating))
-        EGP:egpLine(87,vec2(460,255),vec2(460,255-Shields))
+        EGP:egpLine(83,vec2(345,254),vec2(345,254-Hull))
+        EGP:egpSize(83,30)
+        EGP:egpLine(85,vec2(405,254),vec2(405,254-Plating))
+        EGP:egpSize(85,30)
+        EGP:egpLine(87,vec2(465,254),vec2(465,254-Shields))
+        EGP:egpSize(87,30)
+
     }
     else{
         EGP:egpSetText(60,"No Target")
@@ -1336,7 +1294,7 @@ Use = User:keyUse()
 if(changed(Use) & Use){
     if(EGP:button(Cursor,67)){
         User:soundPlay(999,3,"console/beep04.wav")
-        for(F=2,40){
+        for(F=2,40,1){
             EGP:egpColor(F,vec(0,100,230))
         }
         foreach(DR, Door:wirelink = Doors){
@@ -1352,7 +1310,7 @@ if(changed(Use) & Use){
     }
     elseif(EGP:button(Cursor,68)){
         User:soundPlay(999,3,"console/beep04.wav")
-        for(F=2,40){
+        for(F=2,40,1){
             EGP:egpColor(F,vec(255,255,0))
         }
         foreach(DR, Door:wirelink = Doors){
@@ -1367,7 +1325,7 @@ if(changed(Use) & Use){
     }
     elseif(EGP:button(Cursor,69)){
         User:soundPlay(999,3,"console/beep04.wav")
-        for(F=2,40){
+        for(F=2,40,1){
             EGP:egpColor(F,vec(255,0,0))
         }
         foreach(DR, Door:wirelink = Doors){
@@ -1383,44 +1341,35 @@ if(changed(Use) & Use){
     }
     elseif(EGP:button(Cursor,72)){
         User:soundPlay(999,3,"console/beep04.wav")
-        if(Strenght > 1){
+        if(Strenght > -5){
             Strenght--
             EGP:egpSetText(71,""+Strenght)
-            foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
-                    EWeapon["Strength",number] = Strenght
-                }
+            Shield["Strength",number]=Strenght
+                
         }
     }
     elseif(EGP:button(Cursor,73)){
         User:soundPlay(999,3,"console/beep04.wav")
-        if(Strenght < 10){
+        if(Strenght < 5){
             Strenght++
             EGP:egpSetText(71,""+Strenght)
-            foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
-                    EWeapon["Strength",number] = Strenght
-                }
+            Shield["Strength",number]=Strenght
+            
         }
     }
     elseif(EGP:button(Cursor,78)){
         User:soundPlay(999,3,"console/beep04.wav")
-        if(FireRate > 1){
-            FireRate--
-            EGP:egpSetText(77,""+FireRate)
-            foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
-                    EWeapon["Fire Rate",number] = FireRate
-                }
+        if(Shield){
+        if(Shield["Active",number] == 1){
+            Shield["Activate",number] = 0
         }
+        else{
+            Shield["Activate",number] = 1
     }
-    elseif(EGP:button(Cursor,79)){
-        User:soundPlay(999,3,"console/beep04.wav")
-        if(FireRate < 10){
-            FireRate++
-            EGP:egpSetText(77,""+FireRate)
-            foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
-                    EWeapon["Fire Rate",number] = FireRate
-                }
-        }
+}
+    else{warn("No Shield connected")}
     }
+    
 }
 timer("tactical",200)
 }
@@ -1493,46 +1442,6 @@ if(changed(Use) & Use){
 }
 timer("engineering",200)
 }
-if(clk("sensoren")){
-findByClass("player")
-findSortByDistance(E:pos())
-Players = findToArray()
-for (X=1, Players:count()){
-    Player = Players[X,entity]
-    PID = Player:id()
-         
-        Vec = entity():toLocal(Player:pos())/Zoom
-        Vec2 = vec2(Vec:x()+270,Vec:y()+260)
-        
-        EGP:egpCircle(200+X,Vec2,vec2(3,3))
-        EGP:egpColor(200+X,teamColor(Player:team()))
-        
-        EGP:egpText(300+X,Player:name(),Vec2+vec2(0,-20))
-        EGP:egpSize(300+X,15)
-        EGP:egpAlign(300+X,1)
-        
-        if(Vec2:x() < 120 | Vec2:x() > 420 | Vec2:y() < 80 | Vec2:y() > 380){
-            EGP:egpRemove(200+X)
-            EGP:egpRemove(300+X)
-            }
-    
-}
-User = EGP["User",entity]
-#Get the position of their cursor on the screen
-Cursor = EGP:egpCursor(User)
-#Get whether the person is pressing use
-Use = User:keyUse()
-#If I press use on the screen...
-if(changed(Use) & Use){
-    if(EGP:button(Cursor,63)){
-        User:soundPlay(999,3,"console/beep04.wav")
-        EGP:egpLine(65,vec2(430,Cursor:y()),vec2(490,Cursor:y()))
-        Zoom = round(Cursor:y()*0.2)
-    }
-    
-}
-timer("sensoren",400)
-}
 if(clk("warpmain")){
     EGP:egpSetText(65,"Current Position: X("+round(E:pos():x())+") Y("+round(E:pos():y())+") Z("+round(E:pos():z())+")")
     EGP:egpSetText(66,"Destination:          X("+round(WarpDest:x())+") Y("+round(WarpDest:y())+") Z("+round(WarpDest:z())+")")
@@ -1544,8 +1453,8 @@ Use = User:keyUse()
 #If I press use on the screen...
 if(changed(Use) & Use){
     
-    if(EGP:button(Cursor,58)){
-        for(F=71,500){
+    if(EGP:button(Cursor,104)){
+        for(F=71,500,1){
             EGP:egpRemove(F)
         }
         timer("warplocations",100)
@@ -1565,8 +1474,8 @@ if(changed(Use) & Use){
     EGP:egpBox(76,vec2(175,250),vec2(90,40))
     EGP:egpColor(76,vec(0,200,255))
     EGP:egpBoxOutline(77,vec2(175,250),vec2(90,40))
-    EGP:egpText(78,"Shakuras",vec2(175,240))
-    EGP:egpAlign(78,1)
+    EGP:egpText(103,"Shakuras",vec2(175,240))
+    EGP:egpAlign(103,1)
 
     EGP:egpBox(79,vec2(175,320),vec2(90,40))
     EGP:egpColor(79,vec(0,200,255))
@@ -1615,17 +1524,20 @@ if(changed(Use) & Use){
     EGP:egpBoxOutline(101,vec2(430,330),vec2(90,40))
     EGP:egpText(102,"Lava",vec2(430,320))
     EGP:egpAlign(102,1)
-    
         
         
     }
-    elseif(EGP:button(Cursor,60)){
-        for(F=71,500){
+    elseif(EGP:button(Cursor,106)){
+        for(F=71,500,1){
             EGP:egpRemove(F)
+            
+            
         }
-        
+
         timer("warpcoordinates",100)
         stoptimer("warplocations")
+     
+        
         
         EGP:egpColor(58,vec(0,200,255))
     EGP:egpColor(60,vec(0,100,255))
@@ -1718,7 +1630,6 @@ if(changed(Use) & Use){
     EGP:egpAlign(119,1)
     EGP:egpText(120,"+1000",vec2(440,345))
     EGP:egpAlign(120,1)
-    
     }
     elseif(EGP:button(Cursor,67)){
         if(Engine){
@@ -2168,6 +2079,7 @@ elseif(CU&LSC[2,string] == "freq")
                 
                 if(O:aimEntity():isValid()){
                     Beam1 = O:aimEntity()
+                    Pad["Teleport Everything",normal]=1
                 }
                 else{say("Cant find an object!")}
             }
@@ -2194,6 +2106,13 @@ elseif(CU&LSC[2,string] == "freq")
                 #print("Test")
                 say("Beaming "+Beam1:name()+" to Pad")
                 timer("beampad",200)
+            }
+            elseif(LSC[5,string] == "there"){
+                Pad["Origin",vector] = Beam1:pos()
+                Pad["Dest",vector] = O:aimPos()
+                #print("Test")
+                say("Beaming "+Beam1:name()+" to AimPos")
+                timer("beamtovec",200)
             }
             else{
                 Find2 = findPlayerByName(LSC[5,string])
@@ -2244,28 +2163,36 @@ elseif(CU&LSC[2,string] == "freq")
 ########################Life Support####################################################################
             elseif (CU & LS:find("lifesupport on")) {
         hideChat(1)
-		if(LifeSupport){
-        if(LifeSupport["Active",number] == 1){
+
+        if(LSCo==1){
+        foreach(LiSu, LifeSupport:wirelink = LSS){
+        if(LifeSupport["On",number] == 1){
             owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")
         say("Lifesupport is already activated!")
         }
         else{
-            LifeSupport["Activate",number] = 1
+            LifeSupport["On",number] = 1
         say("Activating Lifesupport!")}
             }
+        }
+    
 			else{warn("No Lifesupport connected!")}
             }
             elseif (CU & LS:find("lifesupport off")) {
         hideChat(1)
-		if(LifeSupport){
-        if(LifeSupport["Active",number] == 0){
+
+    if(LSCo==1){
+        foreach(LiSu, LifeSupport:wirelink = LSS){
+        if(LifeSupport["On",number] == 0){
             owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")
         say("Lifesupport is already deactivated!")
         }
         else{
-            LifeSupport["Activate",number] = 0
+            LifeSupport["On",number] = 0
         say("Deactivating Lifesupport!")}
             }
+        }
+    
 			else{warn("No Lifesupport connected!")}
             }
 			
@@ -2308,11 +2235,30 @@ elseif(CU&LSC[2,string] == "freq")
                 if(Target:isValid()){
                     Sensor["Target",entity] = Target
                 say("Targeting "+Target:name())
+                
+                findClearBlackList()
+                findClearWhiteList()
+                findExcludeClass("prop_physics")
+                findIncludePlayerProps(Target)
+                findInSphere(Target:pos(),100000)
+                TarStuff = findToArray()
+                if(G < TarStuff:count()){
+                    G++
+                    V = TarStuff[G,entity]
+
+                #printTable(TarStuff)
+
+                if(V:type():sub(0,9) == "ship_core"){
+                    TarCore = V:wirelink()
+                    print("Found Core")
+                }
             }
+        }
             else{say("Could not target "+LSC[3,string])
                 Target = noentity()
                 Sensor["Target",entity] = Target}
             }
+        
             }
             elseif(Com1 != "" & Com2 != ""){
                 if(TarEnt:exists(Com1)){
@@ -2450,14 +2396,14 @@ elseif(CU&LSC[2,string] == "freq")
             else{say("I dont know which language you want me to translate it in.")}
         }     
 ##################NO CLIP####################################################################################		
-        elseif (CU & LS:find("enable noclip")) {
+        #[elseif (CU & LS:find("enable noclip")) {
             LifeSupport["Disable Noclip",number] = 0
             say("Enabling Noclip in the ship")
         } 
         elseif (CU & LS:find("disable noclip")) {
             LifeSupport["Disable Noclip",number] = 1
             say("Disabling Noclip in the ship")
-        }  
+        } ]# 
 ############################## TRACTOR BEAM#####################################################
         elseif (CU & LS:find("tractor beam on")) {
             if(TractorEmitter){
@@ -2517,7 +2463,7 @@ elseif(CU&LSC[2,string] == "freq")
         stopAllTimers()
         timer("LockAI",100)        
         AIUseOk = 0
-         for(F=56,500){
+         for(F=56,500,1){
         EGP:egpRemove(F)
         }
         warn("Disabling all command functions!")
@@ -2539,7 +2485,7 @@ if(CU & LSC[1,string] == "ai"){
     if(CU & LS:find("ai restore command functions")){
         stopAllTimers()     
         AIUseOk = 1
-         for(F=56,500){
+         for(F=56,500,1){
         EGP:egpRemove(F)
         timer("initegp",100)
         }
@@ -2590,10 +2536,18 @@ if(clk("SG-Door"))
     
 }
 if(clk("beampad")){
-    Pad["Send",number] = 1}
+    Pad["Send",number] = 1
+    timer("disableTPE",1000)
+}
 #else{Pad["Send",number] = 0}
 if(clk("beamtovec")){
-    Pad["Send",number]=1}
+    Pad["Send",number]=1
+    timer("disableTPE",1000)
+    }
+if(clk("disableTPE")){
+    Pad["Teleport Everything",normal]=0
+    Pad["Send",number]=0
+}
 #else{Pad["Send",number]=0}
 if(clk("warp")){
     Engine["Warp",number]=1}
@@ -2633,6 +2587,35 @@ if(clk("think")){
     }
     
 timer("think",2000)
+}
+#[if(clk("wire3")){
+                 if(G < TarStuff:count()){
+                    G++
+                    V = TarStuff[G,entity]
+
+                #printTable(TarStuff)
+
+                if(V:type():sub(0,9) == "ship_core"){
+                    TarCore = V:wirelink()
+                    print("Found Core")
+                }
+                if(TarCore){stoptimer("wire3") timer("GReset",100) }
+                else{timer("wire3",20)  }
+                  
+            }
+            else{stoptimer("wire3") timer("GReset",100)}
+         
+        }]#
+if(clk("egpclear")){
+    #[if(EC<=100){
+        EGP:egpRemove(EC)
+        EC++
+        timer("egpclear",1)
+    }
+    elseif(EC>100){
+        EC=56
+        stoptimer("egpclear")
+    }]#
 }
 if(httpClk()){
     say("The translation is '"+translate(TrText4,TrLangFinal)+"'.")

@@ -4,34 +4,27 @@
 @persist SavedPos:table File:string CurrentStation:string
 @persist Filecanload FileReady Loaded Notloaded Loadit E:entity N
 @persist TIME:string TXTPOS:vector2 TXTCOLOR:vector SIGNCOLOR:vector N2:string N3:string
-@persist HH:string MM:string SS:string H M S1 G:gtable Var:table
+@persist HH:string MM:string SS:string H M S1 G:gtable
 @persist ID
 @trigger 
 interval(100)
 
 N=fileCanWrite()
-        signalSetGroup("Bus")
-        dsJoinGroup("Bus")
 if(first()|dupefinished()){
     function array findSeats(Range:normal){
-        findClearBlackList()
-        findClearWhiteList()
-        findExcludeClass("prop_physics")
-        findIncludeClass("prop_vehicle_":sub(1,12))
-        findInSphere(entity():pos(),Range)
-        Seats=findToArray()
-        
-        return Seats
-    }
+    findClearBlackList()
+    findClearWhiteList()
+    findExcludeClass("prop_physics")
+    findIncludeClass("prop_vehicle_":sub(1,12))
+    findInSphere(entity():pos(),Range)
+    Seats=findToArray()
+    
+    dsJoinGroup("Bus")
     
     G = gTable("Businfo")
-    printTable(findSeats(3000))
-
-    #Neue ID ermitteln
-    ID = G["Bus", table]:count() + 1
-    Var["ID", number] = ID
-    Var["Entity", entity] = entity()    
-    G["Bus", table]:pushTable(Var)
+    return Seats
+}
+printTable(findSeats(3000))
 }
 
 
@@ -39,6 +32,18 @@ if(first()|dupefinished()){
 S = entity()
 runOnChat(1)
 runOnFile(1)
+
+if(G["ID",number]==0)
+{
+    ID=1
+    G["ID",number]=ID
+}
+else
+{
+    ID=G["ID",number]+1
+    G["ID",number]=ID
+}
+
 
 
 function void printSeats(K:number,ColorA:vector,Name:string,ColorB:vector,Message:string){
@@ -71,7 +76,7 @@ function string getCurrentStation(){
     for (Key=1, Keys:count()){
        Pos = SavedPos[Keys[Key,string],vector]
        Distance = EntityPos:distance(Pos)
-       if(Distance < 1000){
+       if(Distance < 2500){
          return Keys[Key,string]
        }
     }
@@ -125,8 +130,8 @@ if( changed(FileReady) & FileReady ){
     hint("Stations loaded from file", 100)
 } 
 
-if (chatClk(entity():isWeldedTo():driver())){
-    LastSaid=entity():isWeldedTo():driver():lastSaid():explode(" ")
+if (chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
     Command = LastSaid[1,string]
     Arg1 = LastSaid[2,string]
     Arg2 = LastSaid[3,string]
@@ -138,9 +143,6 @@ if(Command=="!SZ"){
     TXTPOS=vec2(30,20)
     TXTCOLOR=vec(255,0,0)
     chatPrint(vec(255,110,0),"[B"+LINE+"]",vec(255,255,0),"New Mode: SCHOOL DRIVE")
-    
-    Var["Direc", string] = Text
-    Var["Line", string] = LINE
 }
 elseif(Command=="!DF"){
     hideChat(1)
@@ -151,8 +153,6 @@ elseif(Command=="!DF"){
     TXTCOLOR=vec(255,100,0)
     print("Debug")
     chatPrint(vec(255,110,0),"[B"+LINE+"]",vec(255,255,0),"New Mode: SERVICE! DO NOT ENTER!!!" )
-    Var["Direc", string] = Text
-    Var["Line", string] = LINE
 }
 elseif(Command=="!LF"& Arg1){
     hideChat(1)
@@ -162,8 +162,6 @@ elseif(Command=="!LF"& Arg1){
     TXTPOS=vec2(120,20)
     TXTCOLOR=vec(255,100,0)
     chatPrint(vec(255,110,0),"[B"+LINE+"]",vec(255,255,0),"New Mode: Regular."+" LINE: "+Arg1+" DIRECTION: "+Arg2)
-    Var["Direc", string] = Direction
-    Var["Line", string] = LINE
 }
 elseif(Command=="!SF"){
     hideChat(1)
@@ -173,8 +171,6 @@ elseif(Command=="!SF"){
     TXTPOS=vec2(60,20)
     TXTCOLOR=vec(255,0,0)
     chatPrint(vec(255,110,0),"[B"+LINE+"]",vec(255,255,0),"New Mode: Special Drive" )
-    Var["Direc", string] = Direction
-    Var["Line", string] = LINE
 }
 
 if (Command=="!sv"&Arg1){

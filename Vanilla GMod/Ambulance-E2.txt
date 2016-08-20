@@ -1,8 +1,8 @@
 @name Ambulance-E2
 @inputs EGP:wirelink
 @outputs LEFT:vector RIGHT:vector Alert 
-@persist SSZ
-@persist T2 T3 T1 D1 D Q PlayerHP Player:string PlyE:entity SRGB:vector HP:string SID:string Status:string
+@persist SSZ Target:entity
+@persist T2 T3 T1 D1 D Q PlayerHP Player:string PlyE:entity SRGB:vector HP:string SID:string Status:string NH:string NHv:vector
 @trigger 
 
 interval(100)
@@ -11,14 +11,17 @@ if(first()|dupefinished()){
     T1=1
     T2=1
     T3=1
+    PlyE=owner()
     timer("meh2",1000)
-    chatPrint(vec(255,0,0),"[AMBULANCE]",vec(0,0,0),"If you need Medical help then type 'help' in the chat")
+    #chatPrint(vec(255,0,0),"[AMBULANCE]",vec(0,0,0),"If you need Medical help then type 'help' in the chat")
     print("Welcome to the Ambulance Flash light System")
     print("Write !ahelp to get a list of the Chip Commands")
     print("E2 made by [XCO][CDG] Rainbow Dash")
     EGP:egpClear()
     SRGB=vec(0,0,0)
+    #timer("ACT",1000)
 }
+
 
 if(Q==1){
     chatPrint(vec(255,0,0),"[AMBULANCE]",vec(0,0,0),"!!!ATTENTION!!! AMBULANCE IN DUTY! CLEAR THE WAY!")
@@ -53,7 +56,50 @@ elseif(clk("Meh1")){
     LEFT=vec(0,0,255)
     timer("meh2",1000)
 }
+##Medical System##
+PlayerHP=PlyE:health()
+Player=PlyE:name()
+SID=PlyE:steamID()
+if(PlayerHP<=0){
+    PlyE=owner()
+}
+elseif(PlayerHP<=10){
+        SRGB=vec(255,0,0)
+        Status="!!!CRITICAL!!!"
+        SSZ=75
+        NHv=vec(255,0,0)
+        NH="!!!ALERT!!! CRITICAL STATUS! HP UNDER 10! IMMEDIANTLY HELP FOR:#"+lastSpoke():name()+"#"
+          }
+elseif(PlayerHP<=20){
+        SRGB=vec(255,0,0)
+        Status="URGENT HELP"
+        SSZ=75
+        NHv=vec(255,255,0)
+        NH="!!!ALERT!!! CRITICAL STATUS! HP UNDER 20! #"+lastSpoke():name()+"# NEED'S HELP! URGENT!"
+    }
+elseif(PlayerHP<=50){
+        SRGB=vec(120,120,0)
+        Status="NEED'S HELP"
+        SSZ=75
+        NHv=vec(120,120,0)
+        NH="HP UNDER 10! MEDICAL HELP FOR:#"+lastSpoke():name()+"#"
+}
+elseif(PlayerHP<=70){
+        SRGB=vec(0,255,0)
+        Status="Medical Support"
+        SSZ=55
+        NHv=vec(0,255,0)
+        NH="Hp under 70! Medical Suport for:#"+lastSpoke():name()+"#"
+}
+elseif(PlayerHP>70){ 
+        SRGB=vec(0,0,255)
+        Status="No help needed"
+        SSZ=55
+        NHv=vec(0,0,255)
+        NH="Player #"+lastSpoke():name()+"# Doesent need help"
+}
 #CHAT SYSTEM#
+
 runOnChat(1)
 if (chatClk()){
     LastSaid2=lastSaid():explode(" ")
@@ -63,43 +109,18 @@ if (chatClk()){
     
      if(Command2=="help")
      {
-         PlayerHP=lastSpoke():health()
-         PlyE=lastSpoke()
-         Player=PlyE:name()
-         SID=lastSpoke():steamID()
-         if(PlayerHP<=10){
-            SRGB=vec(255,0,0)
-            Status="!!!CRITICAL!!!"
-            SSZ=75
-            printColor(vec(255,0,0),"!!!ALERT!!! CRITICAL STATUS! HP UNDER 10! IMMEDIANTLY HELP FOR:#"+Player+"#")
-            }
-         elseif(PlayerHP<=20){
-             SRGB=vec(255,0,0)
-            Status="NEED'S URGENT HELP"
-            SSZ=55
-            printColor(vec(255,255,0),"!!!ALERT!!! CRITICAL STATUS! HP UNDER 20! #"+Player+"# NEED'S HELP! URGENT!")
-        }
-        elseif(PlayerHP<=50){
-             SRGB=vec(120,120,0)
-            Status="NEED'S HELP"
-            SSZ=75
-            printColor(vec(120,120,0),"HP UNDER 10! MEDICAL HELP FOR:#"+Player+"#")
-        }
-        elseif(PlayerHP<=70){
-             SRGB=vec(0,255,0)
-            Status="Medical Support"
-            SSZ=55
-            printColor(vec(0,255,0),"Hp under 70! Medical Suport for:#"+Player+"#")
-        }
-        elseif(PlayerHP>70){ 
-            SRGB=vec(0,0,255)
-            Status="No help needed"
-            SSZ=55
-            printColor(vec(0,0,255),"Player #"+Player+"# Doesent need help") 
-        }
- } 
+        PlyE=lastSpoke()
+        printColor(NHv,NH)
+    } 
 }
-
+if(clk("ACT")){
+    EGP:egpText(10,PlayerHP:toString(),vec2(320,170))
+    EGP:egpColor(8,SRGB)
+    EGP:egpText(11,SID,vec2(15,250))
+    EGP:egpText(12,Player,vec2(15,150))
+    EGP:egpText(13,Status,vec2(40,370))
+    timer("ACT",1000)
+}
 
 #OWNER CHAT#
 if(chatClk(owner())){
