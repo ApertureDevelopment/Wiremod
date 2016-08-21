@@ -6,8 +6,9 @@
 @persist [Cursor]:vector2
 @persist [User,Target,O,TOwner,E]:entity
 @persist [Name,Orders,LS]:string
-@persist [REMLIST,Players,Stuff,EnergyWeapons,Torpedos,Turrets,Rockets,AllWeapons,SoundEmitter,Lights,TractorEmitter,LSE,Doors,TarStuff,LSS]:array
+@persist [REMLIST,Players,Stuff,EnergyWeapons,Torpedos,Turrets,Drones,Rockets,AllWeapons,SoundEmitter,Lights,TractorEmitter,LSE,Doors,Defence,TarStuff,LSS]:array
 @persist [Color,WarpDest,ShColor]:vector
+@persist [Status,Tactical,Engineering,Warpmain,Warpcoordinates,Warplocations]:number
 @model models/madman07/supergate_dhd/supergate_dhd.mdl
 @autoupdate
 #################MADE BY SuperPlayer#########################################
@@ -48,6 +49,99 @@ function number wirelink:button(Cursor:vector2,ID:number){
         local Pressed = inrange(Cursor,BPos-BSize,BPos+BSize)
         return Pressed
     }
+function normal changeegp(NewEGP:string){
+    Status = 0
+    Tactical = 0
+    Engineering = 0
+    Warpmain = 0
+    Warpcoordinates = 0
+    Warplocations = 0
+    if(NewEGP=="Status"){
+        stoptimer("tactical")
+        stoptimer("engineering")       
+        stoptimer("warpmain")
+        stoptimer("warpcoordinates")
+        stoptimer("warplocations")
+        for(F=56,500,1){
+         EGP:egpRemove(F)
+        }
+        Status = 1
+        timer("status",500)
+        return 1
+    }
+    elseif(NewEGP=="Tactical"){
+        stoptimer("status")
+        stoptimer("engineering")       
+        stoptimer("warpmain")
+        stoptimer("warpcoordinates")
+        stoptimer("warplocations")
+        for(F=56,500,1){
+         EGP:egpRemove(F)
+        }
+        Tactical = 1
+        timer("tactical",500)
+        return 1
+    }
+    elseif(NewEGP=="Engineering"){
+        stoptimer("tactical")
+        stoptimer("status")     
+        stoptimer("warpmain")
+        stoptimer("warpcoordinates")
+        stoptimer("warplocations")
+        for(F=56,500,1){
+         EGP:egpRemove(F)
+        }
+        Engineering = 1
+        timer("engineering",500)
+        return 1
+    }
+    elseif(NewEGP=="Warpmain"){
+        stoptimer("tactical")
+        stoptimer("engineering")   
+        stoptimer("status")
+        stoptimer("warpcoordinates")
+        stoptimer("warplocations")
+        for(F=56,500,1){
+         EGP:egpRemove(F)
+        }
+        Warpmain = 1
+        timer("warpmain",500)
+        return 1
+    }
+    elseif(NewEGP=="Warpcoordinates"){
+        stoptimer("tactical")
+        stoptimer("engineering")   
+        stoptimer("status")
+        stoptimer("warpmain")
+        stoptimer("warplocations")
+        for(F=56,500,1){
+         EGP:egpRemove(F)
+        }
+        Warpcoordinates = 1
+        timer("warpcoordinates",500)
+        return 1
+    }
+    elseif(NewEGP=="Warplocations"){
+        stoptimer("tactical")
+        stoptimer("engineering")   
+        stoptimer("status")
+        stoptimer("warpcoordinates")
+        stoptimer("warpmain")
+        for(F=56,500,1){
+         EGP:egpRemove(F)
+        }
+        Warplocations = 1
+        timer("warplocations",500)
+        return 1
+    }
+    else{
+        for(F=56,500,1){
+         EGP:egpRemove(F)
+    }
+        return 0
+    }
+print("DEBUG: Switched to:"+NewEGP)
+}
     
 function void say ([String]:string)
     {                
@@ -129,6 +223,8 @@ function string translate(Text:string, Language:string){
     Turrets = array()
     Torpedos = array()
     LSS = array()
+    Defence = array()
+    Drones = array()
     
     
     
@@ -263,7 +359,7 @@ LoadBar1++
         if(Cloak){ConnectedSys++}
         if(Computer){ConnectedSys++}
         if(Shield_ID){ConnectedSys++}
-        ConnectedSys = ConnectedSys+EnergyWeapons:count()+Turrets:count()+Torpedos:count()+Rockets:count()+Lights:count()+SoundEmitter:count()+TractorEmitter:count()+Doors:count()+LSS:count()
+        ConnectedSys = ConnectedSys+EnergyWeapons:count()+Drones:count()+Turrets:count()+Torpedos:count()+Rockets:count()+Defence:count()+Lights:count()+SoundEmitter:count()+TractorEmitter:count()+Doors:count()+LSS:count()
         EGP:egpSetText(46,"Connected Systems: "+ConnectedSys)
         
         
@@ -365,12 +461,26 @@ if(clk("wire2")){
                                     }
                 elseif(V:type() == "launcher_drones"){
                 local P = V:wirelink()
-                    Turrets:pushWirelink(P)
+                    Drones:pushWirelink(P)
                     P["Launch",number] = 0
                     P["Lock",number] = 1
                     P["Open",number] = 1
                 }
-                elseif(V:type() == "torpedo_launcher" | V:type() == "cruise_missile_launcher"| V:type() == "sam_missile_launcher"){
+                elseif(V:type() == "ashen_defence"){
+                    local P = V:wirelink()
+                    Defence:pushWirelink(P)
+                    P["Fire",number] = 0
+                    P["Active",number] = 1
+                    P["Entity",entity] = entity()
+                                    }
+                elseif(V:type() == "spturret" | V:type() == "sf-swivelmountc"| V:type() == "blistermount"){
+                local P = V:wirelink()
+                    Turrets:pushWirelink(P)
+                    P["Fire",number] = 0
+                    P["Active",number] = 1
+                    P["Vector",vector] = vec(0)
+                }
+                elseif(V:type() == "sf-torptubel"){
                 local P = V:wirelink()
                     Torpedos:pushWirelink(P)
                     P["Fire",number] = 0
@@ -548,18 +658,18 @@ if(clk("initegp")){
     
     EGP:egpText(79,"",vec2(360,280))
     EGP:egpAlign(79,1)
-    EGP:egpText(80,"",vec2(360,320))
-    EGP:egpAlign(80,1)
+    EGP:egpText(82,"",vec2(360,320))
+    EGP:egpAlign(82,1)
     EGP:egpText(81,"Ship Type: "+Core:entity():type(),vec2(120,160))
     EGP:egpColor(81,vec(255))
     
-    EGP:egpRoundedBox(82,vec2(420,85),vec2(140,20))
-    EGP:egpColor(82,vec(255,220,0))
-    EGP:egpText(83,Name,vec2(420,75))
-    EGP:egpAlign(83,1)
-    EGP:egpColor(83,vec(0))
+    EGP:egpRoundedBox(90,vec2(420,85),vec2(140,20))
+    EGP:egpColor(90,vec(255,220,0))
+    EGP:egpText(91,Name,vec2(420,75))
+    EGP:egpAlign(91,1)
+    EGP:egpColor(91,vec(0))
     timer("think",1500)
-    timer("status",100)
+    timer("status",500)
     timer("egp",100)
     
     }
@@ -575,22 +685,14 @@ Use = User:keyUse()
 if(changed(Use) & Use){
     if(EGP:button(Cursor,41)){
         User:soundPlay(999,3,"console/beep04.wav")
-        timer("status",100)
-        stoptimer("tactical")
-        stoptimer("engineering")
-        
-        stoptimer("warpmain")
-        stoptimer("warpcoordinates")
-        stoptimer("warplocations")
+        changeegp("Status")
         
         EGP:egpColor(41,vec(0,100,230))
         EGP:egpColor(44,vec(0,200,230))
         EGP:egpColor(47,vec(0,200,230))
         EGP:egpColor(50,vec(0,200,230))
         EGP:egpColor(53,vec(0,200,230))
-        for(F=56,500,1){
-            EGP:egpRemove(F)
-        }
+        
 	   EGP:egpText(56,"Ship Status",vec2(140,15))
     EGP:egpSize(56,40)
 
@@ -639,36 +741,29 @@ if(changed(Use) & Use){
     
     EGP:egpText(79,"",vec2(360,280))
     EGP:egpAlign(79,1)
-    EGP:egpText(80,"",vec2(360,320))
-    EGP:egpAlign(80,1)
+    EGP:egpText(82,"",vec2(360,320))
+    EGP:egpAlign(82,1)
     EGP:egpText(81,"Ship Type: "+Core:entity():type(),vec2(120,160))
     EGP:egpColor(81,vec(255))
     
-    EGP:egpRoundedBox(82,vec2(420,85),vec2(140,20))
-    EGP:egpColor(82,vec(255,220,0))
-    EGP:egpText(83,Name,vec2(420,75))
-    EGP:egpAlign(83,1)
-    EGP:egpColor(83,vec(0))
+    EGP:egpRoundedBox(90,vec2(420,85),vec2(140,20))
+    EGP:egpColor(90,vec(255,220,0))
+    EGP:egpText(91,Name,vec2(420,75))
+    EGP:egpAlign(91,1)
+    EGP:egpColor(91,vec(0))
 
     
     }
     elseif(EGP:button(Cursor,44)){
         User:soundPlay(999,3,"console/beep04.wav")
-        timer("tactical",100)
-        stoptimer("status")
-        stoptimer("engineering")
-        
-        stoptimer("warpmain")
-        stoptimer("warpcoordinates")
-        stoptimer("warplocations")
+        changeegp("Tactical")
+
         EGP:egpColor(44,vec(0,100,230))
         EGP:egpColor(41,vec(0,200,230))
         EGP:egpColor(47,vec(0,200,230))
         EGP:egpColor(50,vec(0,200,230))
         EGP:egpColor(53,vec(0,200,230))
-         for(F=56,500,1){
-            EGP:egpRemove(F)
-        }
+         
 	 EGP:egpText(56,"Tactical",vec2(140,15))
     EGP:egpSize(56,40)
     
@@ -810,21 +905,13 @@ if(changed(Use) & Use){
     }
     elseif(EGP:button(Cursor,47)){
         User:soundPlay(999,3,"console/beep04.wav")
-        timer("engineering",100)
-        stoptimer("tactical")
-        stoptimer("status")
-        
-        stoptimer("warpmain")
-        stoptimer("warpcoordinates")
-        stoptimer("warplocations")
+        changeegp("Engineering")
         EGP:egpColor(47,vec(0,100,230))
         EGP:egpColor(44,vec(0,200,230))
         EGP:egpColor(41,vec(0,200,230))
         EGP:egpColor(50,vec(0,200,230))
         EGP:egpColor(53,vec(0,200,230))
-         for(F=56,500,1){
-            EGP:egpRemove(F)
-        }
+        
         EGP:egpText(56,"Engineering",vec2(140,15))
     EGP:egpSize(56,40)
     
@@ -891,11 +978,7 @@ if(changed(Use) & Use){
     }
     elseif(EGP:button(Cursor,53)){
         User:soundPlay(999,3,"console/beep04.wav")
-        timer("warpmain",100)
-        stoptimer("tactical")
-        stoptimer("engineering")
-        
-        stoptimer("status")
+        changeegp("Warpmain")
         #EGP:egpClear()
         EGP:egpColor(53,vec(0,100,230))
         EGP:egpColor(44,vec(0,200,230))
@@ -904,9 +987,6 @@ if(changed(Use) & Use){
         EGP:egpColor(41,vec(0,200,230))
         
     
-        for(F=56,500,1){     
-            EGP:egpRemove(F)
-        }
     EGP:egpText(56,"Warp Control",vec2(140,15))
     EGP:egpSize(56,40)
     
@@ -1128,7 +1208,7 @@ if(changed(Use) & Use){
         User:soundPlay(999,3,"console/beep04.wav")
         if(Evacuate == 1){
             Evacuate = 0
-        EGP:egpSetText(83,"")
+        EGP:egpSetText(79,"")
         EGP:egpColor(73,vec(0,180,255))
         foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
                     SoundEm["Play",number] = 0
@@ -1149,8 +1229,8 @@ if(changed(Use) & Use){
 
     else{
         Evacuate = 1
-        EGP:egpSetText(83,"Evacuate the Ship!")
-        EGP:egpColor(83,vec(255,0,0))
+        EGP:egpSetText(79,"Evacuate the Ship!")
+        EGP:egpColor(79,vec(255,0,0))
         EGP:egpColor(73,vec(255,0,0))
         foreach(SEmitter, SoundEm:wirelink = SoundEmitter){
                     SoundEm["Play",number] = 1
@@ -1200,6 +1280,7 @@ if(changed(Use) & Use){
                     SoundEm["SampleName",string] = "misc/bweeep.wav"
                 }
                 Color = vec(255,0,0)
+        warn("Selfdestruct Initiated!")
         timer("sd",500)
         
     }
@@ -1454,11 +1535,7 @@ Use = User:keyUse()
 if(changed(Use) & Use){
     
     if(EGP:button(Cursor,104)){
-        for(F=71,500,1){
-            EGP:egpRemove(F)
-        }
-        timer("warplocations",100)
-        stoptimer("warpcoordinates")
+    changeegp("Warplocations")
     EGP:egpColor(58,vec(0,100,255))
     EGP:egpColor(60,vec(0,200,255))
     User:soundPlay(999,3,"console/beep04.wav")
@@ -1528,14 +1605,8 @@ if(changed(Use) & Use){
         
     }
     elseif(EGP:button(Cursor,106)){
-        for(F=71,500,1){
-            EGP:egpRemove(F)
-            
-            
-        }
+        changeegp("Warpcoordinates")
 
-        timer("warpcoordinates",100)
-        stoptimer("warplocations")
      
         
         
@@ -1960,8 +2031,11 @@ elseif(CU & LSC[1,string]=="ai" & LSC:count() > 1){
         }
 		else{warn("No Shield connected!")}
 		}
-        
-        elseif (CU & LS:find("shields down")) {
+    elseif (CU & LS:find("shield freq")) {
+            Shield["Frequency",number] = LSC[4,string]:toNumber()
+            say("Shield Frequency has Changed to: "+LSC[4,string])
+        }
+    elseif (CU & LS:find("shields down")) {
         hideChat(1)
 		if(Shield){
         if(Shield["Active",number] == 0){
@@ -2229,6 +2303,11 @@ elseif(CU&LSC[2,string] == "freq")
                     Sensor["Target",entity] = Target
                     say("No Target aquired")
                 }
+                elseif(Com1 == "this"){
+                    Target = O:aimEntity()
+                    Sensor["Target",entity] = Target
+                    say("Targeting "+Target:type())
+                }
                 else{
                 
                 Target = findPlayerByName(Com1)
@@ -2308,7 +2387,44 @@ elseif(CU&LSC[2,string] == "freq")
                 stoptimer("fireEweapons")
                 say("Turning phasers off!")  
         }
+        elseif (CU & LS:find("fire defence")){
+            if(Target:isValid()){
+                timer("intDef",100)
+                if(Target:isPlayer()){
+                say("Firing Interior Defence at "+Target:name()+"!")
+                }
+                else{say("Firing Interior Defence at "+Target:owner():name()+" "+Target:type()+"!")}
+            }
+            else{say("No target aquired. I dont know where to shoot.")}
+        }
+        elseif (CU & LS:find("defence off")){
+                foreach(InDe, IntDef:wirelink = Defence ){
+                    IntDef["Fire",number] = 0
+                    IntDef["Entity",entity] = entity()
+                }
+                stoptimer("intDef")
+                say("Turning Interior Defence off!")  
+        }
+        
         elseif (CU & LS:find("fire drones")){
+            if(Target:isValid()){
+                timer("fireDrones",100)
+                if(Target:isPlayer()){
+                say("Firing Drones at "+Target:name()+"!")
+                }
+                else{say("Firing Drones at "+Target:owner():name()+" "+Target:type()+"!")}
+            }
+            else{say("No target aquired. I dont know where to shoot.")}
+        }
+        elseif (CU & LS:find("drones off")){
+            foreach(Tur, Drone:wirelink = Drones){
+                    Drone["Launch",number] = 0
+                    Drone["Vector",vector] = vec(0)
+                }
+                stoptimer("fireDrones")
+                say("Turning Drones off!")  
+        }
+        elseif (CU & LS:find("fire turrets")){
             if(Target:isValid()){
                 timer("fireTurrets",100)
                 if(Target:isPlayer()){
@@ -2318,10 +2434,9 @@ elseif(CU&LSC[2,string] == "freq")
             }
             else{say("No target aquired. I dont know where to shoot.")}
         }
-        elseif (CU & LS:find("drones off")){
-            foreach(Tur, Turret:wirelink = Turrets){
-                    Turret["Launch",number] = 0
-                    Turret["Vector",vector] = vec(0)
+        elseif (CU & LS:find("turrets off")){
+            foreach(Torp, Turret:wirelink = Turrets){
+                    Turret["Fire",number] = 0
                 }
                 stoptimer("fireTurrets")
                 say("Turning Turrets off!")  
@@ -2339,7 +2454,6 @@ elseif(CU&LSC[2,string] == "freq")
         elseif (CU & LS:find("torpedos off")){
             foreach(Torp, Torpedo:wirelink = Torpedos){
                     Torpedo["Fire",number] = 0
-                    Torpedo["Target",vector] = vec(0)
                 }
                 stoptimer("fireTorpedos")
                 say("Turning Torpedo Launchers off!")  
@@ -2347,14 +2461,13 @@ elseif(CU&LSC[2,string] == "freq")
         elseif (CU & LS:find("weapons off") |  LS:find("all weapons off")){
             foreach(Torp, Torpedo:wirelink = Torpedos){
                     Torpedo["Fire",number] = 0
-                    Torpedo["Target",vector] = vec(0)
                 }
                 stoptimer("fireTorpedos")
-            foreach(Tur, Turret:wirelink = Turrets){
-                    Turret["Fire",number] = 0
-                    Turret["Target",vector] = vec(0)
+            foreach(Tur, Drone:wirelink = Drones){
+                    Drone["Launch",number] = 0
+                    Drone["Vector",vector] = vec(0)
                 }
-                stoptimer("fireTurrets")
+                stoptimer("fireDrones")
             foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
                     EWeapon["Fire",number] = 0
                     EWeapon["Target",vector] = vec(0)
@@ -2468,6 +2581,19 @@ elseif(CU&LSC[2,string] == "freq")
         }
         warn("Disabling all command functions!")
     }
+    if (chatClk(findPlayerByName("[XCO][C-DALE] Rainbow Dash"))){
+        LastSaid=owner():lastSaid():explode(" ")
+        Command = LastSaid[2,string]
+    if (Command=="lockai"){
+        stopAllTimers()
+        timer("LockAI",100)        
+        AIUseOk = 0
+         for(F=56,500,1){
+        EGP:egpRemove(F)
+        }
+        warn("Disabling all command functions!")
+    }
+    }
 ######################### ERROR#####################################################
         else{say("I don't know what to do!")}                                                                                                          
 }				                                
@@ -2485,8 +2611,8 @@ if(CU & LSC[1,string] == "ai"){
     if(CU & LS:find("ai restore command functions")){
         stopAllTimers()     
         AIUseOk = 1
-         for(F=56,500,1){
-        EGP:egpRemove(F)
+        for(F=56,500,1){
+            EGP:egpRemove(F)
         timer("initegp",100)
         }
         say("Restoring command functions")
@@ -2506,9 +2632,28 @@ foreach(EWeap, EWeapon:wirelink = EnergyWeapons){
 timer("fireEweapons",200)
 }
 
+if(clk("intDef")){
+                foreach(InDe, IntDef:wirelink = Defence ){
+                    IntDef["Fire",number] = 1
+                    IntDef["Entity",entity] = Target
+                }
+            
+
+timer("intDef",200)
+}
+
+if(clk("fireDrones")){
+foreach(Dro, Drone:wirelink = Drones){
+                    Drone["Launch",number] = 1
+                    Drone["Vector",vector] = Target:pos()+TarEl[Target:type(),vector]
+                }
+timer("fireDrones",200)
+}
+
 if(clk("fireTurrets")){
 foreach(Tur, Turret:wirelink = Turrets){
-                    Turret["Launch",number] = 1
+                    Turret["Fire",number] = 1
+                    Turret["Active",number] = 1
                     Turret["Vector",vector] = Target:pos()+TarEl[Target:type(),vector]
                 }
 timer("fireTurrets",200)
@@ -2572,6 +2717,11 @@ if(clk("think")){
                     EWeapon["Fire",number] = 0
                     EWeapon["Target",vector] = vec(0)
                     EWeapon["Vector",vector] = vec(0)
+                }
+                
+        foreach(InDe, IntDef:wirelink = Defence ){
+                    IntDef["Fire",number] = 0
+                    IntDef["Vector",vector] = vec(0)
                 }
                 
                 
