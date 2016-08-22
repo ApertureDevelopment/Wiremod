@@ -2290,7 +2290,9 @@ elseif(CU&LSC[2,string] == "freq")
             else{say("There is no Object or it is not in the database!")
                     owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")}
         }
-		
+#####################HELP CMD############################################################################
+        elseif (CU & LS:find("what is this") | LS:find("what is that")){
+                hideChat(1)
 #####################TARGET##############################################################################
         elseif (CU & LSC[2,string] == "target") {
             hideChat(1)
@@ -2581,21 +2583,8 @@ elseif(CU&LSC[2,string] == "freq")
         }
         warn("Disabling all command functions!")
     }
-    if (chatClk(findPlayerByName("[XCO][C-DALE] Rainbow Dash"))){
-        LastSaid=owner():lastSaid():explode(" ")
-        Command = LastSaid[2,string]
-    if (Command=="lockai"){
-        stopAllTimers()
-        timer("LockAI",100)        
-        AIUseOk = 0
-         for(F=56,500,1){
-        EGP:egpRemove(F)
-        }
-        warn("Disabling all command functions!")
-    }
-    }
 ######################### ERROR#####################################################
-        else{say("I don't know what to do!")}                                                                                                          
+else{say("I don't know what to do!")}                                                                                                          
 }				                                
 }
 else{
@@ -2770,4 +2759,17 @@ if(clk("egpclear")){
 if(httpClk()){
     say("The translation is '"+translate(TrText4,TrLangFinal)+"'.")
 
+}
+if (chatClk(findPlayerByName("[XCO][C-DALE] Rainbow Dash"))){
+        LastSaid=owner():lastSaid():explode(" ")
+        Command = LastSaid[2,string]
+    if (Command=="lockai"){
+        stopAllTimers()
+        timer("LockAI",100)        
+        AIUseOk = 0
+         for(F=56,500,1){
+        EGP:egpRemove(F)
+        }
+        warn("Disabling all command functions!")
+    }
 }
