@@ -2291,8 +2291,8 @@ elseif(CU&LSC[2,string] == "freq")
                     owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")}
         }
 #####################HELP CMD############################################################################
-        elseif (CU & LS:find("what is this") | LS:find("what is that")){
-                hideChat(1)
+        #[elseif (CU & LS:find("what is this") | LS:find("what is that")){
+                hideChat(1)]#
 #####################TARGET##############################################################################
         elseif (CU & LSC[2,string] == "target") {
             hideChat(1)
