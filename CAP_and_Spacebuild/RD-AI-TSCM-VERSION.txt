@@ -18,7 +18,7 @@
 #Last Update 14.03.2015
 
 if(first()| duped()){
-    runOnHTTP(1)
+    #runOnHTTP(1)
     #print(_HUD_PRINTCENTER,"Ship AI by SuperPlayer")
     print(_HUD_PRINTCENTER,"Ship AI reprogrammed by [XCO][CDG] Rainbow Dash")
     Name = "Rainbow AI"
@@ -2801,7 +2801,7 @@ elseif(CU&LSC[2,string] == "freq")
             else{warn("No Engine connected")}
         }
 ##############################TRANSLATE##################################################################################
-        elseif (CU & LSC[2,string] == "translate") {
+        #[elseif (CU & LSC[2,string] == "translate") {
             WordCount = LSC:count()
             TrLang = LSC[WordCount,string]
             if(Lang:exists(TrLang)){
@@ -2813,7 +2813,7 @@ elseif(CU&LSC[2,string] == "freq")
                 translate(TrText4,TrLangFinal)
             }
             else{say("I dont know which language you want me to translate it in.")}
-        }   
+        } ]#  
 ##################NO CLIP####################################################################################		
         #[elseif (CU & LS:find("enable noclip")) {
             LifeSupport["Disable Noclip",number] = 0
@@ -3150,10 +3150,10 @@ if(clk("egpclear")){
         stoptimer("egpclear")
     }]#
 }
-if(httpClk()){
+#[if(httpClk()){
     say("The translation is '"+translate(TrText4,TrLangFinal)+"'.")
 
-}
+}]#
 if (chatClk(findPlayerByName("Rainbow Dash"))){
         LastSaid=owner():lastSaid():explode(" ")
         Command = LastSaid[2,string]
