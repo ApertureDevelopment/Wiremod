@@ -9,7 +9,7 @@
 @persist [REMLIST,Players,Stuff,EnergyWeapons,Torpedos,Turrets,Drones,Rockets,AllWeapons,SoundEmitter,Lights,TractorEmitter,LSE,Doors,Defence,TarStuff,LSS]:array
 @persist [Color,WarpDest,ShColor]:vector
 @persist [Status,Tactical,Engineering,Warpmain,Warpcoordinates,Warplocations]:number
-@persist Dial:string IrisStstus:string IrisCode CodeStatus:vector IrisDesc:string IB IBC
+@persist Dial:string IrisStstus:string IrisCode CodeStatus:vector IrisDesc:string IB IBC SGA:table
 @model models/madman07/supergate_dhd/supergate_dhd.mdl
 @autoupdate
 #################MADE BY SuperPlayer#########################################
@@ -64,8 +64,10 @@ function normal changeegp(NewEGP:string){
         stoptimer("warpcoordinates")
         stoptimer("warplocations")
         stoptimer("stargate")
-        for(F=56,500,1){
-         EGP:egpRemove(F)
+        stoptimer("StargateList")
+        for(F=56,500,1){        
+            if(F==200 | F==201 | F==202 | F==203){}        
+            else{EGP:egpRemove(F)}        
         }
         Status = 1
         timer("status",500)
@@ -78,8 +80,10 @@ function normal changeegp(NewEGP:string){
         stoptimer("warpcoordinates")
         stoptimer("warplocations")
         stoptimer("tactical")
-        for(F=56,500,1){
-         EGP:egpRemove(F)
+        stoptimer("StargateList")
+        for(F=56,500,1){      
+            if(F==200 | F==201 | F==202 | F==203){}        
+            else{EGP:egpRemove(F)}        
         }
         Tactical = 1
         timer("stargate",500)
@@ -92,8 +96,10 @@ function normal changeegp(NewEGP:string){
         stoptimer("warpcoordinates")
         stoptimer("warplocations")
         stoptimer("stargate")
-        for(F=56,500,1){
-         EGP:egpRemove(F)
+        stoptimer("StargateList")
+        for(F=56,500,1){       
+            if(F==200 | F==201 | F==202 | F==203){}        
+            else{EGP:egpRemove(F)} 
         }
         Tactical = 1
         timer("tactical",500)
@@ -106,8 +112,10 @@ function normal changeegp(NewEGP:string){
         stoptimer("warpcoordinates")
         stoptimer("warplocations")
         stoptimer("stargate")
+        stoptimer("StargateList")
         for(F=56,500,1){
-         EGP:egpRemove(F)
+            if(F==200 | F==201 | F==202 | F==203){}        
+            else{EGP:egpRemove(F)}
         }
         Engineering = 1
         timer("engineering",500)
@@ -120,8 +128,10 @@ function normal changeegp(NewEGP:string){
         stoptimer("warpcoordinates")
         stoptimer("warplocations")
         stoptimer("stargate")
-        for(F=56,500,1){
-         EGP:egpRemove(F)
+        stoptimer("StargateList")
+        for(F=56,500,1){         
+            if(F==200 | F==201 | F==202 | F==203){}        
+            else{EGP:egpRemove(F)}       
         }
         Warpmain = 1
         timer("warpmain",500)
@@ -134,8 +144,10 @@ function normal changeegp(NewEGP:string){
         stoptimer("warpmain")
         stoptimer("warplocations")
         stoptimer("stargate")
-        for(F=56,500,1){
-         EGP:egpRemove(F)
+        stoptimer("StargateList")
+        for(F=56,500,1){       
+            if(F==200 | F==201 | F==202 | F==203){}        
+            else{EGP:egpRemove(F)}       
         }
         Warpcoordinates = 1
         timer("warpcoordinates",500)
@@ -148,16 +160,34 @@ function normal changeegp(NewEGP:string){
         stoptimer("warpcoordinates")
         stoptimer("warpmain")
         stoptimer("stargate")
-        for(F=56,500,1){
-         EGP:egpRemove(F)
+        stoptimer("StargateList")
+        for(F=56,500,1){        
+            if(F==200 | F==201 | F==202 | F==203){}        
+            else{EGP:egpRemove(F)}      
         }
         Warplocations = 1
         timer("warplocations",500)
         return 1
     }
-    else{
+    elseif(NewEGP=="StargateList"){
+        stoptimer("tactical")
+        stoptimer("engineering")   
+        stoptimer("status")
+        stoptimer("warpcoordinates")
+        stoptimer("warpmain")
+        stoptimer("stargate")
+        stoptimer("warplocations")
         for(F=56,500,1){
-         EGP:egpRemove(F)
+         if(F==200 | F==201 | F==202 | F==203){}
+        else{EGP:egpRemove(F)}
+        }
+        timer("StargateList",500)
+        return 1
+    }
+    else{
+        for(F=56,500,1){      
+                if(F==200 | F==201 | F==202 | F==203){}        
+                else{EGP:egpRemove(F)}
     }
         return 0
     }
@@ -177,7 +207,7 @@ function void warn ([String]:string)
             
     }	
 
-#[function string translate(Text:string, Language:string){
+function string translate(Text:string, Language:string){
     T = toChar(34)# 34 = " in decimal
     BT = "class="+T+"t0"+T+">"
     Link = "http://translate.google.com/m?hl="+Language+"&sl=auto&q="+Text:replace(" ", "+")
@@ -187,7 +217,7 @@ function void warn ([String]:string)
     Result = Result:explode("<")[1, string]
     Result = Result:replace("&#39;","'")
     return Result
-}]#
+}
     
     TorpType["Photon",number] = 1
     TorpType["Quantum",number] = 2
@@ -514,7 +544,7 @@ if(clk("wire2")){
                     P["Active",number] = 1
                     P["Entity",entity] = entity()
                                     }
-                elseif(V:type() == "spturret" | V:type() == "sf-swivelmountc"| V:type() == "sf-swivelmounts"| V:type() == "blistermount"){
+                elseif(V:type() == "spturret" | V:type() == "sf-swivelmountc"| V:type() == "sf-swivelmounts"| V:type() == "blistermount"| V:type() == "sf-vierling"){
                 local P = V:wirelink()
                     Turrets:pushWirelink(P)
                     P["Fire",number] = 0
@@ -654,7 +684,14 @@ if(clk("initegp")){
     EGP:egpBoxOutline(51,vec2(62,250),vec2(75,30))
     EGP:egpColor(51,vec(255,255,255))
     EGP:egpText(52,"Stargate",vec2(30,245))
-    EGP:egpSize(52,15)   
+    EGP:egpSize(52,15)
+    
+    EGP:egpBox(200,vec2(62,300),vec2(75,30))
+    EGP:egpColor(200,vec(0,200,230))
+    EGP:egpBoxOutline(201,vec2(62,300),vec2(75,30))
+    EGP:egpColor(201,vec(255,255,255))
+    EGP:egpText(202,"Address List",vec2(30,295))
+    EGP:egpSize(202,12)    
     
     stoptimer("initegp")
     
@@ -740,6 +777,7 @@ if(changed(Use) & Use){
         EGP:egpColor(47,vec(0,200,230))
         EGP:egpColor(50,vec(0,200,230))
         EGP:egpColor(53,vec(0,200,230))
+        EGP:egpColor(200,vec(0,200,230))
         
 	   EGP:egpText(56,"Ship Status",vec2(140,15))
     EGP:egpSize(56,40)
@@ -802,6 +840,17 @@ if(changed(Use) & Use){
 
     
     }
+    elseif(EGP:button(Cursor,200)){
+    changeegp("StargateList")
+        EGP:egpColor(41,vec(0,200,230))
+        EGP:egpColor(44,vec(0,200,230))
+        EGP:egpColor(47,vec(0,200,230))
+        EGP:egpColor(50,vec(0,200,230))
+        EGP:egpColor(53,vec(0,200,230))
+        EGP:egpColor(200,vec(0,100,230))
+        EGP:egpText(56,"Stargate Address List",vec2(120,15))
+        EGP:egpSize(56,40)
+    }   
     elseif(EGP:button(Cursor,50)){
     changeegp("Stargate")  
     
@@ -810,6 +859,7 @@ if(changed(Use) & Use){
         EGP:egpColor(47,vec(0,200,230))
         EGP:egpColor(50,vec(0,100,230))
         EGP:egpColor(53,vec(0,200,230))
+        EGP:egpColor(200,vec(0,200,230))
       
     EGP:egpText(56,"Stargate",vec2(140,15))
     EGP:egpSize(56,40)
@@ -900,6 +950,7 @@ if(changed(Use) & Use){
         EGP:egpColor(47,vec(0,200,230))
         EGP:egpColor(50,vec(0,200,230))
         EGP:egpColor(53,vec(0,200,230))
+        EGP:egpColor(200,vec(0,200,230))
          
 	 EGP:egpText(56,"Tactical",vec2(140,15))
     EGP:egpSize(56,40)
@@ -1048,6 +1099,7 @@ if(changed(Use) & Use){
         EGP:egpColor(41,vec(0,200,230))
         EGP:egpColor(50,vec(0,200,230))
         EGP:egpColor(53,vec(0,200,230))
+        EGP:egpColor(200,vec(0,200,230))
         
         EGP:egpText(56,"Engineering",vec2(140,15))
     EGP:egpSize(56,40)
@@ -1060,28 +1112,28 @@ if(changed(Use) & Use){
     EGP:egpLine(61,vec2(173,370),vec2(173,116))
     EGP:egpSize(61,50)
     EGP:egpColor(61,vec(100))
-    EGP:egpLine(62,vec2(173,370),vec2(173,116))
+    EGP:egpLine(62,vec2(173,370),vec2(173,371))
     EGP:egpSize(62,50)
     EGP:egpColor(62,vec(255,192,0))
     
     EGP:egpLine(63,vec2(257,370),vec2(257,116))
     EGP:egpSize(63,50)
     EGP:egpColor(63,vec(100))
-    EGP:egpLine(64,vec2(257,370),vec2(257,116))
+    EGP:egpLine(64,vec2(257,370),vec2(257,371))
     EGP:egpSize(64,50)
     EGP:egpColor(64,vec(0,0,255))
     
     EGP:egpLine(65,vec2(343,370),vec2(343,116))
     EGP:egpSize(65,50)
     EGP:egpColor(65,vec(100))
-    EGP:egpLine(66,vec2(343,370),vec2(343,116))
+    EGP:egpLine(66,vec2(343,370),vec2(343,371))
     EGP:egpSize(66,50)
     EGP:egpColor(66,vec(0,200,200))
     
     EGP:egpLine(67,vec2(427,370),vec2(427,116))
     EGP:egpSize(67,50)
     EGP:egpColor(67,vec(100))
-    EGP:egpLine(68,vec2(427,370),vec2(427,116))
+    EGP:egpLine(68,vec2(427,370),vec2(427,371))
     EGP:egpSize(68,50)
     EGP:egpColor(68,vec(200,200,200))
     
@@ -1122,6 +1174,7 @@ if(changed(Use) & Use){
         EGP:egpColor(47,vec(0,200,230))
         EGP:egpColor(50,vec(0,200,230))
         EGP:egpColor(41,vec(0,200,230))
+        EGP:egpColor(200,vec(0,200,230))
         
     
     EGP:egpText(56,"Warp Control",vec2(140,15))
@@ -1757,16 +1810,77 @@ if(clk("stargate")){
     }
         timer("stargate",500)
 }
-
+if(clk("StargateList")){
+    SGA=Stargate:stargateAddressList()
+    for(I=1,18){
+    if(SGA[I,array][1,string]!=""&&SGA[I,array][1,string]!=""){
+        if(I<10){
+            EGP:egpBox(I+260,vec2(215,50+45*I),vec2(180,40))
+            EGP:egpColor(I+260,vec(0))
+            EGP:egpText(I+240,SGA[I,array][1,string],vec2(230,50+45*I))
+            EGP:egpText(I+220,SGA[I,array][2,string],vec2(130,30+45*I))
+            EGP:egpBoxOutline(I+280,vec2(215,50+45*I),vec2(180,40))
+        }else{
+            EGP:egpBox(I+260,vec2(400,50+45*(I-9)),vec2(180,40))
+            EGP:egpColor(I+260,vec(0))
+            EGP:egpText(I+240,SGA[I,array][1,string],vec2(430,50+45*(I-9)))
+            EGP:egpText(I+220,SGA[I,array][2,string],vec2(315,30+45*(I-9)))
+            EGP:egpBoxOutline(I+280,vec2(400,50+45*(I-9)),vec2(180,40))
+        }
+    }else{
+        EGP:egpRemove(I+260)
+        EGP:egpRemove(I+240)
+        EGP:egpRemove(I+220)
+        EGP:egpRemove(I+280)
+    }
+}
+User = EGP["User",entity]
+#Get the position of their cursor on the screen
+Cursor = EGP:egpCursor(User)
+#Get whether the person is pressing use
+Use = User:keyUse()
+#If I press use on the screen...
+if(changed(Use) & Use){
+    if(EGP:button(Cursor,1)){
+        Stargate["Dial String",string]=SGA[1,array][1,string]
+        timer("StargateDial",100)
+    }
+    if(EGP:button(Cursor,2)){
+        Stargate["Dial String",string]=SGA[2,array][1,string]
+        timer("StargateDial",100)
+    }
+    if(EGP:button(Cursor,3)){
+        Stargate["Dial String",string]=SGA[3,array][1,string]
+        timer("StargateDial",100)
+    }
+    if(EGP:button(Cursor,4)){
+        Stargate["Dial String",string]=SGA[4,array][1,string]
+        timer("StargateDial",100)
+    }
+    if(EGP:button(Cursor,5)){
+        Stargate["Dial String",string]=SGA[5,array][1,string]
+        timer("StargateDial",100)
+    }
+    if(EGP:button(Cursor,6)){
+        Stargate["Dial String",string]=SGA[6,array][1,string]
+        timer("StargateDial",100)
+    }
+    if(EGP:button(Cursor,7)){
+        Stargate["Dial String",string]=SGA[7,array][1,string]
+        timer("StargateDial",100)
+    }
+}
+timer("StargateList",500)
+}
 if(clk("engineering")){
     
     WaterCollector = WaterCore["Collector",entity]:wirelink()
-    
-    EGP:egpLine(62,vec2(173,370),vec2(173,369-Node["Energy",number]/Node["Max Energy",number]*100*2.54))
-    EGP:egpLine(64,vec2(257,370),vec2(257,369-Node["Water",number]/Node["Max Water",number]*100*2.54))
-    EGP:egpLine(66,vec2(343,370),vec2(343,369-Node["Nitrogen",number]/Node["Max Nitrogen",number]*100*2.54))
-    EGP:egpLine(68,vec2(427,370),vec2(427,369-Node["Oxygen",number]/Node["Max Oxygen",number]*100*2.54))
-    
+    if(Node){
+        EGP:egpLine(62,vec2(173,370),vec2(173,369-Node["Energy",number]/Node["Max Energy",number]*100*2.54))
+        EGP:egpLine(64,vec2(257,370),vec2(257,369-Node["Water",number]/Node["Max Water",number]*100*2.54))
+        EGP:egpLine(66,vec2(343,370),vec2(343,369-Node["Nitrogen",number]/Node["Max Nitrogen",number]*100*2.54))
+        EGP:egpLine(68,vec2(427,370),vec2(427,369-Node["Oxygen",number]/Node["Max Oxygen",number]*100*2.54))
+    }
     if(EnergyCore["Active",number] == 1){
         EGP:egpColor(69,vec(0,61,255))
     }
@@ -2595,8 +2709,26 @@ elseif(CU&LSC[2,string] == "freq")
                     owner():soundPlay(999,3,"st/shuttlecraft/computer_error.mp3")}
         }
 #####################HELP CMD############################################################################
-        #[elseif (CU & LS:find("what is this") | LS:find("what is that")){
-                hideChat(1)]#
+        elseif (CU & LSC[2,string] == "help"){
+                hideChat(1)
+                printColor(vec(255,0,0),"[H]:AI Commands are:")
+                printColor(vec(120,0,0),"[H]:All Commands are begining with 'ai '")
+                printColor(vec(0,0,255),"[H]:target <name>/this - Target the Entered Player or the Object you are Aiming")
+                printColor(vec(0,255,0),"[H]:stargate dial/iris/status - Control your stargate")
+                printColor(vec(0,0,255),"[H]:fire all/phaser/turrets/drones/defence - Fire your Weapons")
+                printColor(vec(0,255,0),"[H]:phaser/turrets/drones/defence/all off - Disable your Weapons")
+                printColor(vec(0,0,255),"[H]:warp <dest> - warp to the Entered Destination(sb_galaxie)")
+                printColor(vec(0,255,0),"[H]:translate <text> into <language> - a build in Translator (runOnHttp needs to be on")
+                printColor(vec(0,0,255),"[H]:what is this/that - tells you infos about the object you are Aiming")
+                printColor(vec(0,255,0),"[H]:lifesupport on/off - Enable/Disable your Life Support (Spacebuild map needed)")
+                printColor(vec(0,0,255),"[H]:cloak on/off - Enable/Disable your Cloak")
+                printColor(vec(0,255,0),"[H]:beam <target>/this to <dest>/there/pad - Asgard Transporter (Pad is your Base)")
+                printColor(vec(0,0,255),"[H]:freq <Number> - Set your Weapon Frequence")
+                printColor(vec(0,255,0),"[H]:evac -Enable/disable the Evacuation Alert(Transporter Ports everything near it to vec(0))")
+                printColor(vec(0,0,255),"[H]:destruct <time>/abort - Self Destruction")
+                printColor(vec(0,255,0),"[H]:shields up/down/freq - Enable/Disable/ Set Frequence of your Shield")
+                printColor(vec(0,0,255),"[H]:status - Prints you your Ships Status")
+}             
 #####################TARGET##############################################################################
         elseif (CU & LSC[2,string] == "target") {
             hideChat(1)
@@ -2886,6 +3018,24 @@ elseif(CU&LSC[2,string] == "freq")
                     Stargate["Dial String",string]=""
                     timer("StargateDialAbort",200)
                 }
+                elseif(LSC[4,string]=="mode"){
+                    if(LSC[5,string]=="1"){
+                        say("Dial Sequence Set to: DHD")
+                        Stargate["Dial Mode",number]=1
+                    }
+                    elseif(LSC[5,string]=="0"){
+                        say("Dial Sequence Set to: Regular")
+                        Stargate["Dial Mode",number]=0
+                    }
+                    elseif(LSC[5,string]=="2"){
+                        say("Dial Sequence Set to: Nox")
+                        Stargate["Dial Mode",number]=2
+                    }
+                    else{
+                        warn("Unknown Argument!")
+                        say("Arguments are: 0 - Regular | 1 - DHD | 2 - Nox")
+                    }
+                }
                 elseif(LSC[4,string]==""|LSC[4,string]:length()<6){
                     warn("Invalid Adress")
                 }
@@ -2912,7 +3062,10 @@ elseif(CU&LSC[2,string] == "freq")
                     StargateIris["Toggle",number]=1
                     say("Toggling Iris")
                     timer("iristoggle",1000)
-                }
+                }else{
+                warn("Unknown Argument!")
+                say("Arguments are: Open/Close/''")
+            }
             
             }
             elseif(LSC[3,string]=="status"){
@@ -2938,7 +3091,10 @@ elseif(CU&LSC[2,string] == "freq")
                 else{
                     say("Iris is Open")
                 }
-            }
+            }else{
+            warn("Unknown Argument!")
+            say("Arguments are: status|iris|dial|close")
+        }
             
         }
         else{

@@ -1,0 +1,89 @@
+@name TardisE2
+@inputs Tardis:wirelink
+@outputs
+@persist 
+@trigger 
+interval(200)
+runOnChat(1)
+function number say(Text:string){
+    printColor(vec(255),"[",vec(0,63,255),"Tardis",vec(255),"]",vec(0,255,255),Text)
+    owner():soundPlay(999,3,"tardis/advflight_bad.wav")
+    return 1
+}
+function number warn(Text:string){
+    printColor(vec(255),"[",vec(255,0,0),"WARNING",vec(255),"]",vec(0,255,255),Text)
+    owner():soundPlay(999,3,"ambient/Computer/alarm.wav")
+    return 1
+}
+if (chatClk(owner())){
+    LastSaid=owner():lastSaid():explode(" ")
+    Command = LastSaid[1,string]
+    Argu1 = LastSaid[2,string]
+    Argu2 = LastSaid[3,string]
+    Argu3 = LastSaid[4,string]
+    Argu4 = LastSaid[5,string]
+    Argu5 = LastSaid[6,string]
+    
+    if(Command=="tardis"){
+        hideChat(1)
+        if(Argu1=="goto"){
+            if(Argu2=="vec"){
+                Tardis["XYZ",vector]=vec(Argu3:toNumber(),Argu3:toNumber(),Argu5:toNumber())
+                say("Moving Tardis to: x:"+Argu3+" y:"+Argu4+" z:"+Argu5)
+                timer("TardisTeleport",100)
+            }
+            elseif(Argu2=="player"){
+                Tardis["XYZ",vector]=findPlayerByName(Argu3):pos()
+                say("Moving Tardis to: "+findPlayerByName(Argu3):name())
+                timer("TardisTeleport",100)
+            }
+            else{
+                warn("Unknown Argument!")
+            }
+        }
+        elseif(Argu1=="flightmode"){
+            if(Argu2=="enable"){
+                Tardis["Flightmode",number]=1
+                say("Enabling Tardis Flightmode")
+            }
+            elseif(Argu2=="disable"){
+                Tardis["Flightmode",number]=0
+                say("Disabling Tardis Flightmode")
+            }
+            else{
+                warn("Unknown Argument!")
+            }
+        }
+        elseif(Argu1=="cloak"){
+            if(Argu2=="enable"){
+                Tardis["Phase",number]=1
+                say("Enabling Tardis Cloak")
+            }
+            elseif(Argu2=="disable"){
+                Tardis["Phase",number]=0
+                say("Disabling Tardis Cloak")
+            }
+            else{
+                warn("Unknown Argument!")
+           }
+        }
+        elseif(Argu1=="status"){
+            if(Tardis["Health",number]>=30){
+                say("Tardis Health:"+Tardis["Health",number]:toString())
+            }
+            else{
+                warn("Tardis Health:"+Tardis["Health",number]:toString())
+            }
+        }
+        else{
+            warn("Unknown Argument!")
+        }
+    }
+}
+if(clk("TardisTeleport")){                
+    Tardis["Demat",number]=1
+    timer("TardisTeleport2",1000)
+}
+if(clk("TardisTeleport2")){                
+    Tardis["Demat",number]=0
+}
